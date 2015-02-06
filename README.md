@@ -1,4 +1,4 @@
 # hasmusikell-112
-Wallace Cruz
-Tommy Luk
-Steven Li
+Wallace Luk
+Tommy Li
+Steven Cruz
