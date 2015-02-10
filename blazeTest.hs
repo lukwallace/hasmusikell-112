@@ -15,4 +15,4 @@ numbers n = docTypeHtml $ do
 		p "A list of natural numbers:"
 		ul $ forM_ [1 .. n] (li . toHtml)
 
-main = B.writeFile "test.html" (R.renderHtml (numbers 5))
+main = B.writeFile "blaze-test.html" (R.renderHtml (numbers 5))
