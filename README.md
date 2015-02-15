@@ -7,7 +7,7 @@ height between each note: 5px
 
 height between each stanza: 130px
 
-width for each stanza: 750px
+width for each stanza: from 125px to 750px
 
 sheet size(height,width) = (2339/2px,1656/2px)
 
