@@ -3,6 +3,8 @@ Wallace Luk
 Tommy Li
 Steven Cruz
 
-height between each note: 5xp
+height between each note: 5px
 
-height between each stanza: 130xp
+height between each stanza: 130px
+
+width for each stanza: 825px
