@@ -2,6 +2,7 @@
 
 import System.Environment
 import System.IO
+import System.Exit
 import Text.ParserCombinators.Parsec
 
 --the grammar, yet to be properly defined
@@ -14,7 +15,6 @@ eol = 	try (string "\n\r")
 	<|> string "\n"
 	<|> string "\r"
 	<?>	"end of stanza"
-
 
 --the standalone parse function for parse testing in ghci
 parseInput :: String -> Either ParseError [[String]]
@@ -36,19 +36,25 @@ words_ :: Maybe String -> [String]
 words_ (Just xs) = words xs
 words_ Nothing  = []
 
-checkTitle :: String -> IO ()
+checkTitle :: String -> Maybe String
 checkTitle xs
-	| length firstline < 2 			= putStrLn msg
-	| (head firstline) == "title:" 	= print $ unwords $ tail firstline
-	| otherwise						= putStrLn msg
+	| length firstline < 2 			= Nothing
+	| (head firstline) /= "title:" 	= Nothing
+	| otherwise						= Just $ unwords $ tail firstline
 	where firstline = words_ $ ind 0 $ lines xs;
-		  msg = "title: <your_title> needs to be your first line"
 
+findTitle :: String -> String
+findTitle xs = title
+	where (Just title) = checkTitle xs
 
 main = do
 	args <- getArgs
 	contents <- readFile (head args)
-	checkTitle contents
+	if((checkTitle contents)==Nothing)
+		then do putStrLn "\"title: <your_title>\" needs to be at the top.";
+				exitFailure
+		else putStrLn ". . . ok title";
+	print $ findTitle contents
 	case parse sheet "(stdin)" (appendNewline contents) of
 		Left e -> do putStrLn "Error parsing input:";
 					 print e
