@@ -43,9 +43,20 @@ checkTitle xs
 	| otherwise						= Just $ unwords $ tail firstline
 	where firstline = words_ $ ind 0 $ lines xs;
 
+checkFlatsSharps :: String -> Maybe String
+checkFlatsSharps xs
+	| length line < 2 			= Nothing
+	| (head line) == "flats:" 	= Just "flats"
+	| (head line) == "sharps:" 	= Just "sharps"
+	| otherwise				    = Nothing
+	where line = words_ $ ind 1 $ lines xs;
+
 findTitle :: String -> String
 findTitle xs = title
 	where (Just title) = checkTitle xs
+
+fromJust :: Maybe a -> a
+fromJust (Just a) = a
 
 main = do
 	args <- getArgs
@@ -54,6 +65,13 @@ main = do
 		then do putStrLn "\"title: <your_title>\" needs to be at the top.";
 				exitFailure
 		else putStrLn ". . . ok title";
+
+	if((checkFlatsSharps contents) == Nothing)
+	    then do putStrLn "no flats nor sharps";
+	    else if (fromJust (checkFlatsSharps contents) == "flats")
+	    	then do putStrLn "has flats";
+	    	else putStrLn "has sharps";
+
 	print $ findTitle contents
 	case parse sheet "(stdin)" (appendNewline contents) of
 		Left e -> do putStrLn "Error parsing input:";
