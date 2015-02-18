@@ -16,6 +16,12 @@ eol = 	try (string "\n\r")
 	<|> string "\r"
 	<?>	"end of stanza"
 
+data Sound = Note { tone:: Char,
+					letter:: Char,
+					duration:: Int,
+					octave:: String
+				  } | Chord [Note]
+
 --the standalone parse function for parse testing in ghci
 parseInput :: String -> Either ParseError [[String]]
 parseInput input = parse sheet "(unknown)" input
@@ -70,6 +76,7 @@ main = do
 		then do putStrLn "\"title: <your_title>\" needs to be at the top.";
 				exitFailure
 		else putStrLn ". . . ok title";
+
 
 	if((checkFlatsSharps contents) == Nothing)
 	    then do putStrLn "no flats nor sharps";
