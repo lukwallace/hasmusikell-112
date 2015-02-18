@@ -58,6 +58,11 @@ findTitle xs = title
 fromJust :: Maybe a -> a
 fromJust (Just a) = a
 
+process :: String -> String
+process xs = if(top == "title:" || top == "flats:" || top == "sharps:")
+			 then process $ unlines $ tail $ lines $ xs
+			 else appendNewline $ xs
+			where top = head $ words $ head $ lines xs
 main = do
 	args <- getArgs
 	contents <- readFile (head args)
@@ -73,7 +78,7 @@ main = do
 	    	else putStrLn "has sharps";
 
 	print $ findTitle contents
-	case parse sheet "(stdin)" (appendNewline contents) of
+	case parse sheet "(stdin)" (process contents) of
 		Left e -> do putStrLn "Error parsing input:";
 					 print e
 		Right r -> mapM_ print r
