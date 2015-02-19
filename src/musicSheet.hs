@@ -17,10 +17,10 @@ eol = 	try (string "\n\r")
 	<?>	"end of stanza"
 
 data Sound = Note { tone:: Char,
-					letter:: Char,
+					note:: Char,
 					duration:: Int,
 					octave:: String
-				  } | Chord [Note]
+				  } | Chord [Sound] deriving(Show)
 
 --the standalone parse function for parse testing in ghci
 parseInput :: String -> Either ParseError [[String]]
