@@ -66,8 +66,8 @@ checkTitle xs
 checkFlatsSharps :: String -> Maybe String
 checkFlatsSharps xs
 	| length line < 2 			= Nothing
-	| (head line) == "flats:" 	= Just "flats"
-	| (head line) == "sharps:" 	= Just "sharps"
+	| (head line) == "flats:" 	= Just $ (lines xs)!!1
+	| (head line) == "sharps:" 	= Just $ (lines xs)!!1
 	| otherwise				    = Nothing
 	where line = words_ $ ind 1 $ lines xs;
 
@@ -84,7 +84,13 @@ process xs = if(top == "title:" || top == "flats:" || top == "sharps:")
 			 else appendNewline $ xs
 			where top = head $ words $ head $ lines xs
 
---startSheet :: String -> MaybeString -> Sheet
+addSheetHeader :: String -> Maybe String -> Sheet
+addSheetHeader title Nothing   = Sheet title "" "" []
+addSheetHeader title (Just line)
+	| (head chunks) == "flats:"  = Sheet title (unwords $ tail $ chunks) "" []
+	| (head chunks) == "sharps:" = Sheet title "" (unwords $ tail $ chunks) []
+	where chunks = words line
+
 
 main = do
 	args <- getArgs
@@ -94,14 +100,7 @@ main = do
 				exitFailure
 		else putStrLn ". . . ok title";
 
-
-	if((checkFlatsSharps contents) == Nothing)
-	    then do putStrLn "no flats nor sharps";
-	    else if (fromJust (checkFlatsSharps contents) == "flats")
-	    	then do putStrLn "has flats";
-	    	else putStrLn "has sharps";
-
-	print $ findTitle contents
+	print $ addSheetHeader (findTitle contents) (checkFlatsSharps contents)
 	case parse sheet "(stdin)" (process contents) of
 		Left e -> do putStrLn "Error parsing input:";
 					 print e
