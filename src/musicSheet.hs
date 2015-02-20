@@ -24,25 +24,17 @@ data Note = A | B | C | D | E | F | G | Rest deriving (Show)
 data Sheet = Sheet { title :: String
 					,flats :: String
 					,sharps :: String
-					,song :: [[Measure]]
+					,song :: [[Sound]]
 				   } deriving (Show)
-
-
---A measure has three things -
---1) an x-position distribution: example- half note, half note => [0.5, 0.5]
---2) the actual measure which is just an list of sounds
---3) a Bool telling us whether or not this is the 4th measure of the page
---   or maybe we should have it denote whether or not it's the first?
-data Measure = Measure { xDstrbn :: [Float]
-						,beats :: [Sound]
-						,endingM :: Bool
-					   } deriving (Show)
 
 data Sound = Note { tone :: Tone,
 					note :: Note,
 					duration :: Int,
 					octave :: String
 				  } | Chord [Sound] deriving(Show)
+
+emptySheet :: Sheet
+emptySheet = Sheet "" "" "" []
 
 --the standalone parse function for parse testing in ghci
 parseInput :: String -> Either ParseError [[String]]
