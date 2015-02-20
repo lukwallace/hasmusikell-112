@@ -84,6 +84,9 @@ process xs = if(top == "title:" || top == "flats:" || top == "sharps:")
 			 else appendNewline $ xs
 			where top = head $ words $ head $ lines xs
 
+
+--takes the title, and a maybe string for the flat/sharps and returns
+--sheet object with the appropriate fields
 addSheetHeader :: String -> Maybe String -> Sheet
 addSheetHeader title Nothing   = Sheet title "" "" []
 addSheetHeader title (Just line)
