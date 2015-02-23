@@ -94,6 +94,22 @@ addSheetHeader title (Just line)
 	| (head chunks) == "sharps:" = Sheet title "" (unwords $ tail $ chunks) []
 	where chunks = words line
 
+--intended input: the result of the parse, should check if the
+--array of notes we have are valid notes using regex.
+--prints a message if notes are okay, exits program if not
+checkSound :: [[String]] -> IO ()
+checkSound xs = map 
+
+--creates sound object out of a string like "#A2"
+makeSound :: String -> Sound
+makeSound 
+
+--creates the double array of Sound objects out of parse output
+--for html creation functions
+createMusic :: [[String]] -> [[Sound]]
+createMusic xs 
+
+
 
 main = do
 	args <- getArgs
