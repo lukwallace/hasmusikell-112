@@ -104,7 +104,7 @@ checkSound xs = map
 makeSound :: String -> Sound
 makeSound 
 
-
+--checks which note is inputted
 makeNote :: String -> Note 
 makeNote [] = None
 makeNote xs 
@@ -131,6 +131,13 @@ noteDuration xs
 	| (head xs) == "6"   = 16
 	| otherwise 		 = noteDuration (tail xs)
 
+--checks for tone
+checkTone :: String -> Tone 
+checkTone [] = Natural
+checkTone xs
+	| (head xs) == "b" 	 = "Flat"
+	| (head xs) == "#"   = "Sharp"
+	| otherwise			 = checkTone (tail xs)
 
 
 --creates the double array of Sound objects out of parse output
