@@ -104,11 +104,40 @@ checkSound xs = map
 makeSound :: String -> Sound
 makeSound 
 
+
+makeNote :: String -> Note 
+makeNote [] = None
+makeNote xs 
+	| (head xs) == "A"	 = A
+	| (head xs) == "B"	 = B
+	| (head xs) == "C" 	 = C
+	| (head xs) == "D" 	 = D
+	| (head xs) == "E" 	 = E
+	| (head xs) == "F"	 = F
+	| (head xs) == "G"	 = G
+	| (head xs) == "r" 	 = Rest
+	| otherwise			 = makeNote (tail xs)
+
+--from 1-4, each note takes the according number of beats, 
+--8 and 16 talk 1/2 and 1/4 respectively
+noteDuration :: String -> Int
+noteDuration [] = None
+noteDuration xs
+	| (head xs) == "1" 	 = 1 
+	| (head xs) == "2" 	 = 2
+	| (head xs) == "3" 	 = 3
+	| (head xs) == "4" 	 = 4
+	| (head xs) == "5" 	 = 8
+	| (head xs) == "6"   = 16
+	| otherwise 		 = noteDuration (tail xs)
+
+
+
 --creates the double array of Sound objects out of parse output
 --for html creation functions
 createMusic :: [[String]] -> [[Sound]]
 createMusic xs 
-
+	
 
 
 main = do
