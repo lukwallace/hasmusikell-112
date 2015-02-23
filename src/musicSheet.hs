@@ -5,6 +5,7 @@ import System.IO
 import System.Exit
 import Text.ParserCombinators.Parsec as P
 import Data.List.Split as Z
+import Text.Regex.Posix
 
 --the grammar, yet to be properly defined
 sheet = P.endBy stanza eol
@@ -98,22 +99,32 @@ addSheetHeader title (Just line)
 --intended input: the result of the parse, should check if the
 --array of notes we have are valid notes using regex.
 --prints a message if notes are okay, exits program if not
---checkSound :: [[String]] -> IO ()
---checkSound xss = foldl (\acc1 xs -> foldl (\acc2 x -> (isNote x || isChord x) ) ) True xss
+
+checkSound :: [[String]] -> Bool
+checkSound xss = foldl (\acc xs -> acc && (checkInnerSound xs) ) True xss
+
+checkInnerSound :: [String] -> Bool
+checkInnerSound xs = foldl (\acc x -> acc && (isNote x || isChord x) ) True xs
 
 isNote :: String -> Bool
-isNote x =  let notePattern = "[#bn]?([A..G]|r)(1|2|3|4|5|6|7)[_']*" in
-			x =~ notePattern :: Bool
+isNote x =  let notePattern = "([#bn]?[ABCDEFGr][1234567]([_']*))" in
+			exactMatch $ (x =~ notePattern :: (String,String,String))
 
-exactMatch :: String -> (Int,Int) -> Bool
-exactMatch s (x,y)
-	| (x == 0) && (y== (length s)) = True
-	| otherwise                    = False
+isChord :: String -> Bool
+isChord xs
+	| (length chunks) == 1 = False
+	| otherwise            = and $ map (isNote) chunks
+	where chunks = Z.splitOn "," xs
 
+exactMatch :: (String, String, String) -> Bool
+exactMatch (x, y, z)
+	| (x == "") && (y /= "") && (z == "") = True
+	| otherwise                           = False
 
+--Steven's
 --checks which note is inputted
-makeNote :: String -> Note 
-makeNote [] = None
+{- makeNote :: String -> Notes
+makeNote [] = Empty
 makeNote xs 
 	| (head xs) == "A"	 = A
 	| (head xs) == "B"	 = B
@@ -142,15 +153,15 @@ noteDuration xs
 checkTone :: String -> Tone 
 checkTone [] = Natural
 checkTone xs
-	| (head xs) == "b" 	 = "Flat"
-	| (head xs) == "#"   = "Sharp"
+	| (head xs) == "b" 	 = Flat
+	| (head xs) == "#"   = Sharp
 	| otherwise			 = checkTone (tail xs)
-
-
+-}
+--Tommy's
 --creates sound object out of a string like "#A2"
 makeSound :: String -> Sound
 makeSound xs 
-    |(checkChord xs) >= 1        = returnChord xs
+    |(checkChord xs) >= 1   = returnChord xs
     |otherwise              = returnNote xs
 
 checkChord :: String -> Int
@@ -159,8 +170,8 @@ checkChord xs = noteN (charToString(head xs)) + checkChord (tail xs)
 
 noteN :: String -> Int
 noteN xs 
-    |xs ==  ","                   = 1
-    |otherwise                    = 0
+    |xs ==  ","             = 1
+    |otherwise              = 0
 
 charToString :: Char -> String
 charToString c = [c]
@@ -223,8 +234,6 @@ octaveS xs
 --for html creation functions
 --createMusic :: [[String]] -> [[Sound]]
 --createMusic xs 
-
-
 
 main = do
 	args <- getArgs
