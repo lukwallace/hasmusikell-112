@@ -4,12 +4,18 @@ import System.Environment
 import System.IO
 import System.Exit
 import Text.ParserCombinators.Parsec
+import Text.Regex.Posix
 
 --the grammar, yet to be properly defined
 sheet = endBy stanza eol
 stanza = sepBy measure (char '|')
 measure = many (noneOf "|\n")
 --measure = sepBy sounds (char ' ')
+--sounds = try aNote <|> aChord
+--aNote = try tonedNote <|> regNote
+--tonedNote =
+	--do char '#' | char 'b' |
+
 eol = 	try (string "\n\r")
 	<|> try (string "\r\n")
 	<|> string "\n"
@@ -78,6 +84,7 @@ findTitle xs = title
 fromJust :: Maybe a -> a
 fromJust (Just a) = a
 
+
 process :: String -> String
 process xs = if(top == "title:" || top == "flats:" || top == "sharps:")
 			 then process $ unlines $ tail $ lines $ xs
@@ -97,19 +104,26 @@ addSheetHeader title (Just line)
 --intended input: the result of the parse, should check if the
 --array of notes we have are valid notes using regex.
 --prints a message if notes are okay, exits program if not
-checkSound :: [[String]] -> IO ()
-checkSound xs = map 
+--checkSound :: [[String]] -> IO ()
+--checkSound xss = foldl (\acc1 xs -> foldl (\acc2 x -> (isNote x || isChord x) ) ) True xss
+
+isNote :: String -> Bool
+isNote x =  let notePattern = "[#bn]?([A..G]|r)(1|2|3|4|5|6|7)[_']*" in
+			x =~ notePattern :: Bool
+
+exactMatch :: String -> (Int,Int) -> Bool
+exactMatch s (x,y)
+	| (x == 0) && (y== (length s)) = True
+	| otherwise                    = False
 
 --creates sound object out of a string like "#A2"
-makeSound :: String -> Sound
-makeSound 
+--makeSound :: String -> Sound
+--makeSound 
 
 --creates the double array of Sound objects out of parse output
 --for html creation functions
-createMusic :: [[String]] -> [[Sound]]
-createMusic xs 
-
-
+--createMusic :: [[String]] -> [[Sound]]
+--createMusic xs 
 
 main = do
 	args <- getArgs
