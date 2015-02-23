@@ -3,19 +3,14 @@
 import System.Environment
 import System.IO
 import System.Exit
-import Text.ParserCombinators.Parsec
-import Text.Regex.Posix
+import Text.ParserCombinators.Parsec as P
+import Data.List.Split as Z
 
 --the grammar, yet to be properly defined
-sheet = endBy stanza eol
-stanza = sepBy measure (char '|')
+sheet = P.endBy stanza eol
+stanza = P.sepBy measure (char '|')
 measure = many (noneOf "|\n")
 --measure = sepBy sounds (char ' ')
---sounds = try aNote <|> aChord
---aNote = try tonedNote <|> regNote
---tonedNote =
-	--do char '#' | char 'b' |
-
 eol = 	try (string "\n\r")
 	<|> try (string "\r\n")
 	<|> string "\n"
@@ -23,7 +18,7 @@ eol = 	try (string "\n\r")
 	<?>	"end of stanza"
 
 data Tone = Sharp | Flat | Natural | None deriving (Show)
-data Note = A | B | C | D | E | F | G | Rest deriving (Show)
+data Notes = A | B | C | D | E | F | G | Rest | Empty deriving (Show)
 
 
 --The data object we hope to use to change to html?
@@ -34,9 +29,9 @@ data Sheet = Sheet { title :: String
 				   } deriving (Show)
 
 data Sound = Note { tone :: Tone,
-					note :: Note,
+					note :: Notes,
 					duration :: Int,
-					octave :: String
+					octave :: Int
 				  } | Chord [Sound] deriving(Show)
 
 emptySheet :: Sheet
@@ -84,7 +79,6 @@ findTitle xs = title
 fromJust :: Maybe a -> a
 fromJust (Just a) = a
 
-
 process :: String -> String
 process xs = if(top == "title:" || top == "flats:" || top == "sharps:")
 			 then process $ unlines $ tail $ lines $ xs
@@ -105,61 +99,86 @@ addSheetHeader title (Just line)
 --array of notes we have are valid notes using regex.
 --prints a message if notes are okay, exits program if not
 --checkSound :: [[String]] -> IO ()
---checkSound xss = foldl (\acc1 xs -> foldl (\acc2 x -> (isNote x || isChord x) ) ) True xss
-
-isNote :: String -> Bool
-isNote x =  let notePattern = "[#bn]?([A..G]|r)(1|2|3|4|5|6|7)[_']*" in
-			x =~ notePattern :: Bool
-
-exactMatch :: String -> (Int,Int) -> Bool
-exactMatch s (x,y)
-	| (x == 0) && (y== (length s)) = True
-	| otherwise                    = False
+--checkSound xs = map 
 
 --creates sound object out of a string like "#A2"
---makeSound :: String -> Sound
---makeSound 
+makeSound :: String -> Sound
+makeSound xs 
+    |(checkChord xs) >= 1        = returnChord xs
+    |otherwise              = returnNote xs
 
---checks which note is inputted
-makeNote :: String -> Note 
-makeNote [] = None
-makeNote xs 
-	| (head xs) == "A"	 = A
-	| (head xs) == "B"	 = B
-	| (head xs) == "C" 	 = C
-	| (head xs) == "D" 	 = D
-	| (head xs) == "E" 	 = E
-	| (head xs) == "F"	 = F
-	| (head xs) == "G"	 = G
-	| (head xs) == "r" 	 = Rest
-	| otherwise			 = makeNote (tail xs)
+checkChord :: String -> Int
+checkChord [] = 0
+checkChord xs = noteN (charToString(head xs)) + checkChord (tail xs)
 
---from 1-4, each note takes the according number of beats, 
---8 and 16 talk 1/2 and 1/4 respectively
-noteDuration :: String -> Int
-noteDuration [] = None
-noteDuration xs
-	| (head xs) == "1" 	 = 1 
-	| (head xs) == "2" 	 = 2
-	| (head xs) == "3" 	 = 3
-	| (head xs) == "4" 	 = 4
-	| (head xs) == "5" 	 = 8
-	| (head xs) == "6"   = 16
-	| otherwise 		 = noteDuration (tail xs)
+noteN :: String -> Int
+noteN xs 
+    |xs ==  ","                   = 1
+    |otherwise                    = 0
 
---checks for tone
-checkTone :: String -> Tone 
-checkTone [] = Natural
-checkTone xs
-	| (head xs) == "b" 	 = "Flat"
-	| (head xs) == "#"   = "Sharp"
-	| otherwise			 = checkTone (tail xs)
+charToString :: Char -> String
+charToString c = [c]
+
+returnChord :: String -> Sound
+returnChord xs = Chord (rChord (Z.splitOn "," xs ))
+
+rChord :: [String] -> [Sound]
+rChord [] = []
+rChord (x:xs) = [returnNote x] ++ rChord xs
+
+returnNote :: String -> Sound
+returnNote xs = Note {tone = toneSearch xs, note = noteSearch xs, duration = durationSearch xs, octave = octaveSearch xs}
+
+toneSearch :: String -> Tone
+toneSearch [] = None
+toneSearch xs 
+    | (head xs) == 'b'      = Flat
+    | (head xs) == '#'      = Sharp
+    | (head xs) == 'n'      = Natural
+    | otherwise             = toneSearch (tail xs)
+
+noteSearch :: String -> Notes
+noteSearch [] = Empty
+noteSearch xs 
+    | (head xs) == 'A'      = A
+    | (head xs) == 'B'      = B
+    | (head xs) == 'C'      = C
+    | (head xs) == 'D'      = D
+    | (head xs) == 'E'      = E
+    | (head xs) == 'F'      = F
+    | (head xs) == 'G'      = G
+    | (head xs) == 'r'      = Rest
+    | otherwise             = noteSearch (tail xs)
+
+durationSearch :: String -> Int
+durationSearch [] = 1
+durationSearch xs 
+    | (head xs) == '1'      = 1     --whole
+    | (head xs) == '2'      = 2     --half
+    | (head xs) == '3'      = 3     --3/4
+    | (head xs) == '4'      = 4     --4th
+    | (head xs) == '5'      = 6     --6/8
+    | (head xs) == '6'      = 8     --8th
+    | (head xs) == '7'      = 16     --16th
+    | otherwise             = durationSearch (tail xs)
+
+octaveSearch :: String -> Int
+octaveSearch [] = 0
+octaveSearch xs = octaveS (charToString(head xs)) + octaveSearch (tail xs)
+
+octaveS :: String -> Int
+octaveS xs
+    | xs == "_"             = -1
+    | xs == "'"             = 1
+    | otherwise             = 0
 
 
 --creates the double array of Sound objects out of parse output
 --for html creation functions
 --createMusic :: [[String]] -> [[Sound]]
 --createMusic xs 
+
+
 
 main = do
 	args <- getArgs
