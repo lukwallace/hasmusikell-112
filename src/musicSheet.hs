@@ -16,6 +16,14 @@ eol = 	try (string "\n\r")
 	<|> string "\r"
 	<?>	"end of stanza"
 
+data Setting = Setting{
+     title::String
+    ,flats::String
+    ,sharps::String
+    ,notes::Sound
+	
+}deriving (Show)
+
 --the standalone parse function for parse testing in ghci
 parseInput :: String -> Either ParseError [[String]]
 parseInput input = parse sheet "(unknown)" input
@@ -63,6 +71,7 @@ process xs = if(top == "title:" || top == "flats:" || top == "sharps:")
 			 then process $ unlines $ tail $ lines $ xs
 			 else appendNewline $ xs
 			where top = head $ words $ head $ lines xs
+
 main = do
 	args <- getArgs
 	contents <- readFile (head args)
@@ -72,10 +81,13 @@ main = do
 		else putStrLn ". . . ok title";
 
 	if((checkFlatsSharps contents) == Nothing)
-	    then do putStrLn "no flats nor sharps";
+	    then do Nothing
 	    else if (fromJust (checkFlatsSharps contents) == "flats")
-	    	then do putStrLn "has flats";
-	    	else putStrLn "has sharps";
+	    	then do Setting (flats = tail line)
+	    	     where line = words_ $ ind 1 $ lines contents;
+	    	else Setting (sharps = tail line)
+                 where line = words_ $ ind 1 $ lines contents;
+
 
 	print $ findTitle contents
 	case parse sheet "(stdin)" (process contents) of
