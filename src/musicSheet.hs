@@ -234,8 +234,20 @@ octaveS xs
 
 --creates the double array of Sound objects out of parse output
 --for html creation functions
---createMusic :: [[String]] -> [[[Sound]]]
---createMusic xs 
+createMusic :: [[String]] -> [[[Sound]]]
+createMusic [] = []
+createMusic (x:xs) = [unpage(x)] ++ createMusic(xs)
+
+unpage :: [String] -> [[Sound]]
+unpage [] = []
+unpage (x:xs) = [unstanza(x)] ++ unpage(xs)
+
+unstanza :: String -> [Sound]
+unstanza xs = unmeasure (words xs)
+
+unmeasure :: [String] -> [Sound]
+unmeasure [] = []
+unmeasure (x:xs) = [makeSound(x)] ++ unmeasure(xs)
 
 main = do
 	args <- getArgs
