@@ -21,22 +21,19 @@ eol = 	try (string "\n\r")
 data Tone = Sharp | Flat | Natural | None deriving (Show)
 data Notes = A | B | C | D | E | F | G | Rest | Empty deriving (Show)
 
-
---The data object we hope to use to change to html?
 data Sheet = Sheet { title :: String
 					,flats :: String
 					,sharps :: String
-					,song :: [[Sound]]
+					,song :: [[[Sound]]]
 				   } deriving (Show)
 
 data Sound = Note { tone :: Tone,
 					note :: Notes,
-					duration :: Int,
+					duration :: Float,
 					octave :: Int
 				  } | Chord [Sound] deriving(Show)
 
-emptySheet :: Sheet
-emptySheet = Sheet "" "" "" []
+
 
 --the standalone parse function for parse testing in ghci
 parseInput :: String -> Either ParseError [[String]]
@@ -49,6 +46,8 @@ appendNewline xs = if (last xs /= '\n')
 					then xs ++ "\n"
 					else xs
 
+{-======= Utility Functions =======-}
+
 ind :: Int -> [a] -> Maybe a
 ind x y
 	| x >= length y = Nothing
@@ -57,6 +56,11 @@ ind x y
 words_ :: Maybe String -> [String]
 words_ (Just xs) = words xs
 words_ Nothing  = []
+
+fromJust :: Maybe a -> a
+fromJust (Just a) = a
+
+{-===== Error Checking Functions =====-}
 
 checkTitle :: String -> Maybe String
 checkTitle xs
@@ -77,8 +81,7 @@ findTitle :: String -> String
 findTitle xs = title
 	where (Just title) = checkTitle xs
 
-fromJust :: Maybe a -> a
-fromJust (Just a) = a
+
 
 process :: String -> String
 process xs = if(top == "title:" || top == "flats:" || top == "sharps:")
@@ -107,7 +110,7 @@ checkInnerSound :: [String] -> Bool
 checkInnerSound xs = foldl (\acc x -> acc && (isNote x || isChord x) ) True xs
 
 isNote :: String -> Bool
-isNote x =  let notePattern = "([#bn]?[ABCDEFGr][1234567]([_']*))" in
+isNote x =  let notePattern = "([#bn]?[ABCDEFGr][123456]([_']*))" in
 			exactMatch $ (x =~ notePattern :: (String,String,String))
 
 isChord :: String -> Bool
@@ -207,16 +210,15 @@ noteSearch xs
     | (head xs) == 'r'      = Rest
     | otherwise             = noteSearch (tail xs)
 
-durationSearch :: String -> Int
+durationSearch :: String -> Float
 durationSearch [] = 1
 durationSearch xs 
-    | (head xs) == '1'      = 1     --whole
-    | (head xs) == '2'      = 2     --half
-    | (head xs) == '3'      = 3     --3/4
-    | (head xs) == '4'      = 4     --4th
-    | (head xs) == '5'      = 6     --6/8
-    | (head xs) == '6'      = 8     --8th
-    | (head xs) == '7'      = 16     --16th
+    | (head xs) == '1'      = 1       --whole
+    | (head xs) == '2'      = 1/2     --half
+    | (head xs) == '3'      = 3/4     --3/4
+    | (head xs) == '4'      = 1/4     --4th
+    | (head xs) == '5'      = 1/8     --8th
+    | (head xs) == '6'      = 1/16    --16th
     | otherwise             = durationSearch (tail xs)
 
 octaveSearch :: String -> Int
@@ -232,8 +234,20 @@ octaveS xs
 
 --creates the double array of Sound objects out of parse output
 --for html creation functions
---createMusic :: [[String]] -> [[Sound]]
---createMusic xs 
+createMusic :: [[String]] -> [[[Sound]]]
+createMusic [] = []
+createMusic (x:xs) = [unpage(x)] ++ createMusic(xs)
+
+unpage :: [String] -> [[Sound]]
+unpage [] = []
+unpage (x:xs) = [unstanza(x)] ++ unpage(xs)
+
+unstanza :: String -> [Sound]
+unstanza xs = unmeasure (words xs)
+
+unmeasure :: [String] -> [Sound]
+unmeasure [] = []
+unmeasure (x:xs) = [makeSound(x)] ++ unmeasure(xs)
 
 main = do
 	args <- getArgs
