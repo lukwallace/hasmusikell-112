@@ -18,6 +18,8 @@ eol = 	try (string "\n\r")
 	<|> string "\r"
 	<?>	"end of stanza"
 
+{-=================The Data Representations =====================-}
+
 data Tone = Sharp | Flat | Natural | None deriving (Show)
 data Notes = A | B | C | D | E | F | G | Rest | Empty deriving (Show)
 
@@ -59,7 +61,8 @@ charToString c = [c]
 {-====== Parser Output Utilities ======-}
 
 --strips the title and flat/sharp declarations to create a string
---that's just the stanzas
+--that's just the stanzas as well as appends a new line so the parser
+--doesn't do any freaking out of any sort
 process :: String -> String
 process xs = if(top == "title:" || top == "flats:" || top == "sharps:")
 			 then process $ unlines $ tail $ lines $ xs
@@ -75,6 +78,7 @@ appendNewline xs = if (last xs /= '\n')
 
 {-===== Error Checking Functions =====-}
 
+--For the title
 printTitleError :: String -> IO ()
 printTitleError x = do if((checkTitle x) == Nothing)
 						then do putStrLn "\"title: <your_title>\" needs to be at the top.";
@@ -88,6 +92,8 @@ checkTitle xs
 	| otherwise						= Just $ unwords $ tail firstline
 	where firstline = words_ $ ind 0 $ lines xs;
 
+--For the flats and sharps, does not return an IO action because
+--it's okay if the user doesn't specify any flats or sharps
 checkFlatsSharps :: String -> Maybe String
 checkFlatsSharps xs
 	| length line < 2 			= Nothing
@@ -96,6 +102,7 @@ checkFlatsSharps xs
 	| otherwise				    = Nothing
 	where line = words_ $ ind 1 $ lines xs;
 
+--For the rest of the sheet
 printSoundError :: [[String]] -> IO ()
 printSoundError xss = let (str, bool) = (checkSound xss) in
 					  do if(bool == False) 
