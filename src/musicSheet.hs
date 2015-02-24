@@ -39,14 +39,7 @@ data Sound = Note { tone :: Tone,
 parseInput :: String -> Either ParseError [[String]]
 parseInput input = parse sheet "(unknown)" input
 
---appends a necessary newline if the end of the input is missing one
---so the parser doesn't freak out
-appendNewline :: String -> String
-appendNewline xs = if (last xs /= '\n')
-					then xs ++ "\n"
-					else xs
-
-{-======= Utility Functions =======-}
+{-======= Basic Utility Functions =======-}
 
 ind :: Int -> [a] -> Maybe a
 ind x y
@@ -59,6 +52,26 @@ words_ Nothing  = []
 
 fromJust :: Maybe a -> a
 fromJust (Just a) = a
+
+charToString :: Char -> String
+charToString c = [c]
+
+{-====== Parser Output Utilities ======-}
+
+--strips the title and flat/sharp declarations to create a string
+--that's just the stanzas
+process :: String -> String
+process xs = if(top == "title:" || top == "flats:" || top == "sharps:")
+			 then process $ unlines $ tail $ lines $ xs
+			 else appendNewline $ xs
+			where top = head $ words $ head $ lines xs
+
+--appends a necessary newline if the end of the input is missing one
+--so the parser doesn't freak out
+appendNewline :: String -> String
+appendNewline xs = if (last xs /= '\n')
+					then xs ++ "\n"
+					else xs
 
 {-===== Error Checking Functions =====-}
 
@@ -76,32 +89,6 @@ checkFlatsSharps xs
 	| (head line) == "sharps:" 	= Just $ (lines xs)!!1
 	| otherwise				    = Nothing
 	where line = words_ $ ind 1 $ lines xs;
-
-findTitle :: String -> String
-findTitle xs = title
-	where (Just title) = checkTitle xs
-
-
-
-process :: String -> String
-process xs = if(top == "title:" || top == "flats:" || top == "sharps:")
-			 then process $ unlines $ tail $ lines $ xs
-			 else appendNewline $ xs
-			where top = head $ words $ head $ lines xs
-
-
---takes the title, and a maybe string for the flat/sharps and returns
---sheet object with the appropriate fields
-addSheetHeader :: String -> Maybe String -> Sheet
-addSheetHeader title Nothing   = Sheet title "" "" []
-addSheetHeader title (Just line)
-	| (head chunks) == "flats:"  = Sheet title (unwords $ tail $ chunks) "" []
-	| (head chunks) == "sharps:" = Sheet title "" (unwords $ tail $ chunks) []
-	where chunks = words line
-
---intended input: the result of the parse, should check if the
---array of notes we have are valid notes using regex.
---prints a message if notes are okay, exits program if not
 
 checkSound :: [[String]] -> Bool
 checkSound xss = foldl (\acc xs -> acc && (checkInnerSound xs) ) True xss
@@ -124,44 +111,39 @@ exactMatch (x, y, z)
 	| (x == "") && (y /= "") && (z == "") = True
 	| otherwise                           = False
 
---Steven's
---checks which note is inputted
-{- makeNote :: String -> Notes
-makeNote [] = Empty
-makeNote xs 
-	| (head xs) == "A"	 = A
-	| (head xs) == "B"	 = B
-	| (head xs) == "C" 	 = C
-	| (head xs) == "D" 	 = D
-	| (head xs) == "E" 	 = E
-	| (head xs) == "F"	 = F
-	| (head xs) == "G"	 = G
-	| (head xs) == "r" 	 = Rest
-	| otherwise			 = makeNote (tail xs)
 
---from 1-4, each note takes the according number of beats, 
---8 and 16 talk 1/2 and 1/4 respectively
-noteDuration :: String -> Int
-noteDuration [] = None
-noteDuration xs
-	| (head xs) == "1" 	 = 1 
-	| (head xs) == "2" 	 = 2
-	| (head xs) == "3" 	 = 3
-	| (head xs) == "4" 	 = 4
-	| (head xs) == "5" 	 = 8
-	| (head xs) == "6"   = 16
-	| otherwise 		 = noteDuration (tail xs)
+{-====== Parser Output to Data Representation ======-}
 
---checks for tone
-checkTone :: String -> Tone 
-checkTone [] = Natural
-checkTone xs
-	| (head xs) == "b" 	 = Flat
-	| (head xs) == "#"   = Sharp
-	| otherwise			 = checkTone (tail xs)
--}
---Tommy's
---creates sound object out of a string like "#A2"
+--takes the title, and a maybe string for the flat/sharps and returns
+--sheet object with the appropriate fields
+createSheet :: String -> Maybe String -> [[[Sound]]]-> Sheet
+createSheet title Nothing xsss  = Sheet title "" "" xsss
+createSheet title (Just line) xsss
+	| (head chunks) == "flats:"  = Sheet title (unwords $ tail $ chunks) "" xsss
+	| (head chunks) == "sharps:" = Sheet title "" (unwords $ tail $ chunks) xsss
+	where chunks = words line
+
+findTitle :: String -> String
+findTitle xs = title
+	where (Just title) = checkTitle xs
+
+--creates the triple array of Sound objects out of parse output
+--for html creation functions
+createMusic :: [[String]] -> [[[Sound]]]
+createMusic [] = []
+createMusic (x:xs) = [unpage(x)] ++ createMusic(xs)
+
+unpage :: [String] -> [[Sound]]
+unpage [] = []
+unpage (x:xs) = [unstanza(x)] ++ unpage(xs)
+
+unstanza :: String -> [Sound]
+unstanza xs = unmeasure (words xs)
+
+unmeasure :: [String] -> [Sound]
+unmeasure [] = []
+unmeasure (x:xs) = [makeSound(x)] ++ unmeasure(xs)
+
 makeSound :: String -> Sound
 makeSound xs 
     |(checkChord xs) >= 1   = returnChord xs
@@ -175,9 +157,6 @@ noteN :: String -> Int
 noteN xs 
     |xs ==  ","             = 1
     |otherwise              = 0
-
-charToString :: Char -> String
-charToString c = [c]
 
 returnChord :: String -> Sound
 returnChord xs = Chord (rChord (Z.splitOn "," xs ))
@@ -231,24 +210,20 @@ octaveS xs
     | xs == "'"             = 1
     | otherwise             = 0
 
+{-======Data Representation to Html Object ======-}
 
---creates the double array of Sound objects out of parse output
---for html creation functions
-createMusic :: [[String]] -> [[[Sound]]]
-createMusic [] = []
-createMusic (x:xs) = [unpage(x)] ++ createMusic(xs)
 
-unpage :: [String] -> [[Sound]]
-unpage [] = []
-unpage (x:xs) = [unstanza(x)] ++ unpage(xs)
 
-unstanza :: String -> [Sound]
-unstanza xs = unmeasure (words xs)
 
-unmeasure :: [String] -> [Sound]
-unmeasure [] = []
-unmeasure (x:xs) = [makeSound(x)] ++ unmeasure(xs)
 
+
+
+
+
+
+
+
+{-===============================================-}
 main = do
 	args <- getArgs
 	contents <- readFile (head args)
@@ -257,8 +232,7 @@ main = do
 				exitFailure
 		else putStrLn ". . . ok title";
 
-	print $ addSheetHeader (findTitle contents) (checkFlatsSharps contents)
 	case parse sheet "(stdin)" (process contents) of
 		Left e -> do putStrLn "Error parsing input:";
 					 print e
-		Right r -> mapM_ print r
+		Right r -> print $ createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r)
