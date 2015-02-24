@@ -75,6 +75,12 @@ appendNewline xs = if (last xs /= '\n')
 
 {-===== Error Checking Functions =====-}
 
+printTitleError :: String -> IO ()
+printTitleError x = do if((checkTitle x) == Nothing)
+						then do putStrLn "\"title: <your_title>\" needs to be at the top.";
+							 	exitFailure;
+						else putStrLn ". . . ok title";
+
 checkTitle :: String -> Maybe String
 checkTitle xs
 	| length firstline < 2 			= Nothing
@@ -90,11 +96,36 @@ checkFlatsSharps xs
 	| otherwise				    = Nothing
 	where line = words_ $ ind 1 $ lines xs;
 
-checkSound :: [[String]] -> Bool
-checkSound xss = foldl (\acc xs -> acc && (checkInnerSound xs) ) True xss
+printSoundError :: [[String]] -> IO ()
+printSoundError xss = let (str, bool) = (checkSound xss) in
+					  do if(bool == False) 
+						then do putStrLn ("\"" ++ str ++ "\" is not a valid note or chord");
+								exitFailure
+						else putStrLn ". . . ok sheet";
 
-checkInnerSound :: [String] -> Bool
-checkInnerSound xs = foldl (\acc x -> acc && (isNote x || isChord x) ) True xs
+checkSound :: [[String]] -> (String, Bool)
+checkSound listOfStanzas = foldl (findErrorInStanza) ("",True) listOfStanzas
+
+findErrorInStanza :: (String, Bool) -> [String] -> (String, Bool)
+findErrorInStanza (accS, accB) listOfMeasures
+	| (accB == False) = (accS, accB)
+	| (bool == False) = (str, bool)
+	| otherwise       = ("", bool)
+	where (str, bool) = foldl (findErrorInMeasure) ("", True) listOfMeasures
+
+findErrorInMeasure :: (String, Bool) -> String -> (String, Bool)
+findErrorInMeasure (accS, accB) listOfSounds
+	| (accB == False) = (accS, accB)
+	| (bool == False) = (str, bool)
+	| otherwise       = ("", bool)
+	where (str, bool) = foldl (validSound) ("", True) (words listOfSounds)
+
+validSound :: (String, Bool) -> String -> (String, Bool)
+validSound (accS, accB) x
+	| (accB == False) = (accS, accB)
+	| (bool == False) = (str, bool)
+	| otherwise       = ("", bool)
+	where (str, bool) = (x,(isNote x || isChord x))
 
 isNote :: String -> Bool
 isNote x =  let notePattern = "([#bn]?[ABCDEFGr][123456]([_']*))" in
@@ -225,14 +256,12 @@ octaveS xs
 
 {-===============================================-}
 main = do
-	args <- getArgs
-	contents <- readFile (head args)
-	if((checkTitle contents)==Nothing)
-		then do putStrLn "\"title: <your_title>\" needs to be at the top.";
-				exitFailure
-		else putStrLn ". . . ok title";
+	args <- getArgs;
+	contents <- readFile (head args);
+	printTitleError contents;
 
 	case parse sheet "(stdin)" (process contents) of
-		Left e -> do putStrLn "Error parsing input:";
-					 print e
-		Right r -> print $ createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r)
+		Left e ->  do putStrLn "Error parsing input:";
+					  print e;
+		Right r -> do printSoundError r;
+					  print $ createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
