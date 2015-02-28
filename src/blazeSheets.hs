@@ -28,7 +28,8 @@ setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 			  "#natural{z-index:100;position:absolute;height: 60px;width: 50px;}"++
 			  "#sharp{z-index:100;position:absolute;height: 60px;width: 50px;}"++
 			  "#commontime{z-index:100;position:absolute;height: 50px;width: 50px;}"++
-			  "#beight{z-index:100;position:absolute;height: 50px;width: 50px;}"
+			  "#beight{z-index:100;position:absolute;height: 50px;width: 50px;}" ++
+			  "#line{z-index:100;position:absolute;height: 50px;width: 50px;}"
 
 sheets :: Int -> Int -> Html
 sheets a b = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "image" ! A.src "img/newSheet.png"
@@ -56,6 +57,7 @@ notes x a b
     | x == "natural"     = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "natural" ! A.src "img/natural.png"
     | x == "sharp"       = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "sharp" ! A.src "img/sharp.png"
     | x == "commontime"  = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "commontime" ! A.src "img/commontime.png"
+    | x == "line"        = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "line" ! A.src "img/line.png"
 
 main = do
 	args <- getArgs;
