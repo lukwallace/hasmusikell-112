@@ -34,7 +34,7 @@ setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 
 sheets :: Int -> Int -> Html
 sheets a b = H.img ! A.style (toValue(str)) ! A.id "image" ! A.src "img/newSheet.png"
-    		 where str = "ztop:" ++ show a ++ "px; left:" ++ show b ++ "px;"
+    		 where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
 
 
 test :: String -> Html
@@ -65,7 +65,7 @@ unitHtml x a b
     | x == "sharp"       = H.img ! A.style (toValue(str)) ! A.id "sharp" ! A.src "img/sharp.png"
     | x == "commontime"  = H.img ! A.style (toValue(str)) ! A.id "commontime" ! A.src "img/commontime.png"
     | x == "line"        = H.img ! A.style (toValue(str)) ! A.id "line" ! A.src "img/line.png"
-    where str = "ztop:" ++ show a ++ "px; left:" ++ show b ++ "px;"
+    where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
 
 main = do
 	args <- getArgs;
