@@ -6,6 +6,10 @@ import Text.Blaze.Html5.Attributes as A
 import Text.Blaze.Html.Renderer.Utf8 as R
 import qualified Data.ByteString.Lazy as L
 import System.Environment
+import Text.ParserCombinators.Parsec as P
+import Data.List.Split as Z
+import Text.Regex.Posix
+import Musicsheet
 
 
 setupString :: String
@@ -27,8 +31,8 @@ setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 			  "#commontime{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#beight{z-index:100;position:absolute;height: 50px;width: 50px;}"
 
-sheet :: Html
-sheet = H.img ! A.style "top:0px; left:0px;" ! A.id "image" ! A.src "newSheet.png"
+sheets :: Html
+sheets = H.img ! A.style "top:0px; left:0px;" ! A.id "image" ! A.src "newSheet.png"
 
 test :: String -> Html
 test x = docTypeHtml $ do
@@ -36,7 +40,22 @@ test x = docTypeHtml $ do
 		H.meta ! A.charset "uft-8"
 		H.style $ toHtml setupString
 	H.body $ do
-		H.div ! A.id "container" $ sheet
+		H.div ! A.id "container" $ sheets
 
 
-main = L.writeFile "blaze-test.html" (R.renderHtml (test "Title!"))
+
+main = do
+	args <- getArgs;
+	contents <- readFile (Prelude.head args);
+	printTitleError contents;
+    
+	case parse sheet "(stdin)" (process contents) of
+		Left e ->  do putStrLn "Error parsing input:";
+					  print e;
+					  
+		Right r -> do printSoundError r;
+					  print $ createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
+					  
+	L.writeFile "blaze-test.html" (R.renderHtml (test "Title!"));				  
+
+	     
