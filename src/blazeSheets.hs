@@ -41,6 +41,7 @@ test x = docTypeHtml $ do
 	H.body $ do
 		H.div ! A.id "container" $ sheets 0 0
 
+
 notes :: String -> Int -> Int -> Html
 notes x a b
     | x == "fourth"      = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "fourth" ! A.src "img/4th-note.png"
@@ -68,7 +69,6 @@ main = do
 					  
 		Right r -> do printSoundError r;
 					  print $ createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
-					  
-	L.writeFile "blaze-test.html" (R.renderHtml (test "Title!"));				  
+					  L.writeFile "blaze-test.html" (R.renderHtml (test "Title!"));				  
 
 	     
