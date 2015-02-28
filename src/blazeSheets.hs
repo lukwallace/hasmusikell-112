@@ -30,8 +30,8 @@ setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 			  "#commontime{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#beight{z-index:100;position:absolute;height: 50px;width: 50px;}"
 
-sheets :: Html
-sheets = H.img ! A.style "top:0px; left:0px;" ! A.id "image" ! A.src "img/newSheet.png"
+sheets :: Int -> Int -> Html
+sheets a b = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "image" ! A.src "img/newSheet.png"
 
 test :: String -> Html
 test x = docTypeHtml $ do
@@ -39,7 +39,7 @@ test x = docTypeHtml $ do
 		H.meta ! A.charset "uft-8"
 		H.style $ toHtml setupString
 	H.body $ do
-		H.div ! A.id "container" $ sheets
+		H.div ! A.id "container" $ sheets 0 0
 
 notes :: String -> Int -> Int -> Html
 notes x a b
