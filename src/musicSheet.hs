@@ -248,29 +248,3 @@ octaveS xs
     | xs == "_"             = -1
     | xs == "'"             = 1
     | otherwise             = 0
-
-{-======Data Representation to Html Object ======-}
-
-
-
-
-
-
-
-
-
-
-
-
-{-===============================================-}
-{-main = do
-	args <- getArgs;
-	contents <- readFile (head args);
-	printTitleError contents;
-
-	case parse sheet "(stdin)" (process contents) of
-		Left e ->  do putStrLn "Error parsing input:";
-					  print e;
-		Right r -> do printSoundError r;
-					  print $ createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
-					  -}
