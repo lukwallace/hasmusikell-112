@@ -10,7 +10,22 @@ import System.Environment
 
 setupString :: String
 setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
-			  "#image{height:50%;width:50%;position:absolute;}"
+			  "#image{height:50%;width:50%;position:absolute;}"++
+			  "#fourth{z-index:100;position:absolute;height: 50px;width: 50px;}"++
+			  "#eighth{z-index:100;position:absolute;height: 50px;width: 50px;}"++
+			  "#sixteen{z-index:100;position:absolute;height: 50px;width: 50px;}"++
+			  "#th32{z-index:100;position:absolute;height: 50px;width: 50px;}"++
+			  "#whole{z-index:100;position:absolute;height: 50px;width: 50px;}"++
+			  "#half{z-index:100;position:absolute;height: 50px;width: 50px;}"++
+			  "#wholerest{z-index:100;position:absolute;height: 50px;width: 50px;}"++
+			  "#halfrest{z-index:100;position:absolute;height: 50px;width: 50px;}"++
+			  "#forth-rest{z-index:100;position:absolute;height: 50px;width: 50px;}"++
+			  "#eightrest{z-index:100;position:absolute;height: 50px;width: 50px;}"++
+			  "#flag{z-index:100;position:absolute;height: 50px;width: 50px;}"++
+			  "#natural{z-index:100;position:absolute;height: 60px;width: 50px;}"++
+			  "#sharp{z-index:100;position:absolute;height: 60px;width: 50px;}"++
+			  "#commontime{z-index:100;position:absolute;height: 50px;width: 50px;}"++
+			  "#beight{z-index:100;position:absolute;height: 50px;width: 50px;}"
 
 sheet :: Html
 sheet = H.img ! A.style "top:0px; left:0px;" ! A.id "image" ! A.src "newSheet.png"
