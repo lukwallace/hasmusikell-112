@@ -18,7 +18,6 @@ setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 			  "#fourth{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#eighth{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#sixteen{z-index:100;position:absolute;height: 50px;width: 50px;}"++
-			  "#th32{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#whole{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#half{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#wholerest{z-index:100;position:absolute;height: 50px;width: 50px;}"++
@@ -42,7 +41,21 @@ test x = docTypeHtml $ do
 	H.body $ do
 		H.div ! A.id "container" $ sheets
 
-
+notes :: String -> Int -> Int -> Html
+notes x a b
+    | x == "fourth"      = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "fourth" ! A.src "img/4th-note.png"
+    | x == "eighth"      = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "eighth" ! A.src "img/8th-note.png"
+    | x == "sixteen"     = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "sixteen" ! A.src "img/16th-note.png"
+    | x == "whole"       = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "whole" ! A.src "img/whole-note.png"
+    | x == "half"        = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "half" ! A.src "img/half-note.png"
+    | x == "wholerest"   = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "wholerest" ! A.src "img/wholerest.png"
+    | x == "halfrest"    = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "halfrest" ! A.src "img/halfrest.png"
+    | x == "forth-rest"  = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "forth-rest" ! A.src "img/4th-rest.png"
+    | x == "eightrest"   = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "eightrest" ! A.src "img/eightrest.png"
+    | x == "flag"        = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "flag" ! A.src "img/flag.png"
+    | x == "natural"     = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "natural" ! A.src "img/natural.png"
+    | x == "sharp"       = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "sharp" ! A.src "img/sharp.png"
+    | x == "commontime"  = H.img ! A.style "top:" ++ show a ++ "px; left:" ++ show b ++ "px;" ! A.id "commontime" ! A.src "img/commontime.png"
 
 main = do
 	args <- getArgs;
