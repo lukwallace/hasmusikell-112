@@ -29,10 +29,13 @@ setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 			  "#natural{z-index:100;position:absolute;height: 60px;width: 50px;}"++
 			  "#sharp{z-index:100;position:absolute;height: 60px;width: 50px;}"++
 			  "#commontime{z-index:100;position:absolute;height: 50px;width: 50px;}"++
-			  "#beight{z-index:100;position:absolute;height: 50px;width: 50px;}"
+			  "#beight{z-index:100;position:absolute;height: 50px;width: 50px;}" ++
+			  "#line{z-index:100;position:absolute;height: 50px;width: 50px;}"
 
 sheets :: Int -> Int -> Html
-sheets a b = H.img ! A.style (toValue("top:" ++ show a ++ "px; left:" ++ show b ++ "px;")) ! A.id "image" ! A.src "img/newSheet.png"
+sheets a b = H.img ! A.style (toValue(str)) ! A.id "image" ! A.src "img/newSheet.png"
+    		 where str = "ztop:" ++ show a ++ "px; left:" ++ show b ++ "px;"
+
 
 test :: String -> Html
 test x = docTypeHtml $ do
@@ -42,26 +45,27 @@ test x = docTypeHtml $ do
 	H.body $ do
 		H.div ! A.id "container" $ sheets 0 0
 
-
 titleHtml :: String -> Html
 titleHtml xs =  H.h1 ! A.style (toValue("top:0px; left:" ++ show a ++ "px;")) ! A.id "title" $ toHtml xs
 				where a = 1500 - (0.5*(fromIntegral(length xs))*10)
 
-noteHtml :: String -> Int -> Int -> Html
-noteHtml x a b
-    | x == "fourth"      = H.img ! A.style (toValue("top:" ++ show a ++ "px; left:" ++ show b ++ "px;")) ! A.id "fourth" ! A.src "img/4th-note.png"
-    | x == "eighth"      = H.img ! A.style (toValue("top:" ++ show a ++ "px; left:" ++ show b ++ "px;")) ! A.id "eighth" ! A.src "img/8th-note.png"
-    | x == "sixteen"     = H.img ! A.style (toValue("top:" ++ show a ++ "px; left:" ++ show b ++ "px;")) ! A.id "sixteen" ! A.src "img/16th-note.png"
-    | x == "whole"       = H.img ! A.style (toValue("top:" ++ show a ++ "px; left:" ++ show b ++ "px;")) ! A.id "whole" ! A.src "img/whole-note.png"
-    | x == "half"        = H.img ! A.style (toValue("top:" ++ show a ++ "px; left:" ++ show b ++ "px;")) ! A.id "half" ! A.src "img/half-note.png"
-    | x == "wholerest"   = H.img ! A.style (toValue("top:" ++ show a ++ "px; left:" ++ show b ++ "px;")) ! A.id "wholerest" ! A.src "img/wholerest.png"
-    | x == "halfrest"    = H.img ! A.style (toValue("top:" ++ show a ++ "px; left:" ++ show b ++ "px;")) ! A.id "halfrest" ! A.src "img/halfrest.png"
-    | x == "forth-rest"  = H.img ! A.style (toValue("top:" ++ show a ++ "px; left:" ++ show b ++ "px;")) ! A.id "forth-rest" ! A.src "img/4th-rest.png"
-    | x == "eightrest"   = H.img ! A.style (toValue("top:" ++ show a ++ "px; left:" ++ show b ++ "px;")) ! A.id "eightrest" ! A.src "img/eightrest.png"
-    | x == "flag"        = H.img ! A.style (toValue("top:" ++ show a ++ "px; left:" ++ show b ++ "px;")) ! A.id "flag" ! A.src "img/flag.png"
-    | x == "natural"     = H.img ! A.style (toValue("top:" ++ show a ++ "px; left:" ++ show b ++ "px;")) ! A.id "natural" ! A.src "img/natural.png"
-    | x == "sharp"       = H.img ! A.style (toValue("top:" ++ show a ++ "px; left:" ++ show b ++ "px;")) ! A.id "sharp" ! A.src "img/sharp.png"
-    | x == "commontime"  = H.img ! A.style (toValue("top:" ++ show a ++ "px; left:" ++ show b ++ "px;")) ! A.id "commontime" ! A.src "img/commontime.png"
+unitHtml :: String -> Int -> Int -> Html
+unitHtml x a b
+    | x == "fourth"      = H.img ! A.style (toValue(str)) ! A.id "fourth" ! A.src "img/4th-note.png"
+    | x == "eighth"      = H.img ! A.style (toValue(str)) ! A.id "eighth" ! A.src "img/8th-note.png"
+    | x == "sixteen"     = H.img ! A.style (toValue(str)) ! A.id "sixteen" ! A.src "img/16th-note.png"
+    | x == "whole"       = H.img ! A.style (toValue(str)) ! A.id "whole" ! A.src "img/whole-note.png"
+    | x == "half"        = H.img ! A.style (toValue(str)) ! A.id "half" ! A.src "img/half-note.png"
+    | x == "wholerest"   = H.img ! A.style (toValue(str)) ! A.id "wholerest" ! A.src "img/wholerest.png"
+    | x == "halfrest"    = H.img ! A.style (toValue(str)) ! A.id "halfrest" ! A.src "img/halfrest.png"
+    | x == "forth-rest"  = H.img ! A.style (toValue(str)) ! A.id "forth-rest" ! A.src "img/4th-rest.png"
+    | x == "eightrest"   = H.img ! A.style (toValue(str)) ! A.id "eightrest" ! A.src "img/eightrest.png"
+    | x == "flag"        = H.img ! A.style (toValue(str)) ! A.id "flag" ! A.src "img/flag.png"
+    | x == "natural"     = H.img ! A.style (toValue(str)) ! A.id "natural" ! A.src "img/natural.png"
+    | x == "sharp"       = H.img ! A.style (toValue(str)) ! A.id "sharp" ! A.src "img/sharp.png"
+    | x == "commontime"  = H.img ! A.style (toValue(str)) ! A.id "commontime" ! A.src "img/commontime.png"
+    | x == "line"        = H.img ! A.style (toValue(str)) ! A.id "line" ! A.src "img/line.png"
+    where str = "ztop:" ++ show a ++ "px; left:" ++ show b ++ "px;"
 
 main = do
 	args <- getArgs;
