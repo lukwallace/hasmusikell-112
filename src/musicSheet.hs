@@ -1,4 +1,5 @@
 -- musicSheet.hs
+module MusicSheet where
 
 import System.Environment
 import System.IO
@@ -262,7 +263,7 @@ octaveS xs
 
 
 {-===============================================-}
-main = do
+{-main = do
 	args <- getArgs;
 	contents <- readFile (head args);
 	printTitleError contents;
@@ -272,3 +273,4 @@ main = do
 					  print e;
 		Right r -> do printSoundError r;
 					  print $ createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
+					  -}

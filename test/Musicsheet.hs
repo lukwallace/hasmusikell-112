@@ -1,5 +1,5 @@
 -- musicSheet.hs
-module Musicsheet where
+{-# LANGUAGE OverloadedStrings #-}
 
 import System.Environment
 import System.IO
@@ -7,16 +7,21 @@ import System.Exit
 import Text.ParserCombinators.Parsec as P
 import Data.List.Split as Z
 import Text.Regex.Posix
+import Control.Monad (forM_)
+import Text.Blaze.Html5 as H
+import Text.Blaze.Html5.Attributes as A
+import Text.Blaze.Html.Renderer.Utf8 as R
+import qualified Data.ByteString.Lazy as L
 
 --the grammar, yet to be properly defined
 sheet = P.endBy stanza eol
 stanza = P.sepBy measure (char '|')
 measure = many (noneOf "|\n")
 --measure = sepBy sounds (char ' ')
-eol = 	try (string "\n\r")
-	<|> try (string "\r\n")
-	<|> string "\n"
-	<|> string "\r"
+eol = 	try (P.string "\n\r")
+	<|> try (P.string "\r\n")
+	<|> P.string "\n"
+	<|> P.string "\r"
 	<?>	"end of stanza"
 
 {-=================The Data Representations =====================-}
@@ -158,8 +163,8 @@ exactMatch (x, y, z)
 createSheet :: String -> Maybe String -> [[[Sound]]]-> Sheet
 createSheet title Nothing xsss  = Sheet title "" "" xsss
 createSheet title (Just line) xsss
-	| (head chunks) == "flats:"  = Sheet title (unwords $ tail $ chunks) "" xsss
-	| (head chunks) == "sharps:" = Sheet title "" (unwords $ tail $ chunks) xsss
+	| (Prelude.head chunks) == "flats:"  = Sheet title (unwords $ tail $ chunks) "" xsss
+	| (Prelude.head chunks) == "sharps:" = Sheet title "" (unwords $ tail $ chunks) xsss
 	where chunks = words line
 
 findTitle :: String -> String
@@ -190,7 +195,7 @@ makeSound xs
 
 checkChord :: String -> Int
 checkChord [] = 0
-checkChord xs = noteN (charToString(head xs)) + checkChord (tail xs)
+checkChord xs = noteN (charToString(Prelude.head xs)) + checkChord (tail xs)
 
 noteN :: String -> Int
 noteN xs 
@@ -210,38 +215,38 @@ returnNote xs = Note {tone = toneSearch xs, note = noteSearch xs, duration = dur
 toneSearch :: String -> Tone
 toneSearch [] = None
 toneSearch xs 
-    | (head xs) == 'b'      = Flat
-    | (head xs) == '#'      = Sharp
-    | (head xs) == 'n'      = Natural
+    | (Prelude.head xs) == 'b'      = Flat
+    | (Prelude.head xs) == '#'      = Sharp
+    | (Prelude.head xs) == 'n'      = Natural
     | otherwise             = toneSearch (tail xs)
 
 noteSearch :: String -> Notes
 noteSearch [] = Empty
 noteSearch xs 
-    | (head xs) == 'A'      = A
-    | (head xs) == 'B'      = B
-    | (head xs) == 'C'      = C
-    | (head xs) == 'D'      = D
-    | (head xs) == 'E'      = E
-    | (head xs) == 'F'      = F
-    | (head xs) == 'G'      = G
-    | (head xs) == 'r'      = Rest
+    | (Prelude.head xs) == 'A'      = A
+    | (Prelude.head xs) == 'B'      = B
+    | (Prelude.head xs) == 'C'      = C
+    | (Prelude.head xs) == 'D'      = D
+    | (Prelude.head xs) == 'E'      = E
+    | (Prelude.head xs) == 'F'      = F
+    | (Prelude.head xs) == 'G'      = G
+    | (Prelude.head xs) == 'r'      = Rest
     | otherwise             = noteSearch (tail xs)
 
 durationSearch :: String -> Float
 durationSearch [] = 1
 durationSearch xs 
-    | (head xs) == '1'      = 1       --whole
-    | (head xs) == '2'      = 1/2     --half
-    | (head xs) == '3'      = 3/4     --3/4
-    | (head xs) == '4'      = 1/4     --4th
-    | (head xs) == '5'      = 1/8     --8th
-    | (head xs) == '6'      = 1/16    --16th
+    | (Prelude.head xs) == '1'      = 1       --whole
+    | (Prelude.head xs) == '2'      = 1/2     --half
+    | (Prelude.head xs) == '3'      = 3/4     --3/4
+    | (Prelude.head xs) == '4'      = 1/4     --4th
+    | (Prelude.head xs) == '5'      = 1/8     --8th
+    | (Prelude.head xs) == '6'      = 1/16    --16th
     | otherwise             = durationSearch (tail xs)
 
 octaveSearch :: String -> Int
 octaveSearch [] = 0
-octaveSearch xs = octaveS (charToString(head xs)) + octaveSearch (tail xs)
+octaveSearch xs = octaveS (charToString(Prelude.head xs)) + octaveSearch (tail xs)
 
 octaveS :: String -> Int
 octaveS xs
@@ -251,21 +256,25 @@ octaveS xs
 
 {-======Data Representation to Html Object ======-}
 
+setupString :: String
+setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
+			  "#image{height:50%;width:50%;position:absolute;}"
 
+makeSheet :: Html
+makeSheet = H.img ! A.style "top:0px; left:0px;" ! A.id "image" ! A.src "newSheet.png"
 
-
-
-
-
-
-
-
-
+test :: String -> Html
+test x = docTypeHtml $ do
+	H.head $ do
+		H.meta ! A.charset "uft-8"
+		H.style $ toHtml setupString
+	H.body $ do
+		H.div ! A.id "container" $ sheet
 
 {-===============================================-}
-{-main = do
+main = do
 	args <- getArgs;
-	contents <- readFile (head args);
+	contents <- readFile (Prelude.head args);
 	printTitleError contents;
 
 	case parse sheet "(stdin)" (process contents) of
@@ -273,4 +282,4 @@ octaveS xs
 					  print e;
 		Right r -> do printSoundError r;
 					  print $ createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
-					  -}
+					  L.writeFile "blaze-test.html" (R.renderHtml (test "Title!"));

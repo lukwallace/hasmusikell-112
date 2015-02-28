@@ -9,7 +9,7 @@ import System.Environment
 import Text.ParserCombinators.Parsec as P
 import Data.List.Split as Z
 import Text.Regex.Posix
-import Musicsheet
+import MusicSheet
 
 
 setupString :: String
@@ -32,7 +32,7 @@ setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 			  "#beight{z-index:100;position:absolute;height: 50px;width: 50px;}"
 
 sheets :: Html
-sheets = H.img ! A.style "top:0px; left:0px;" ! A.id "image" ! A.src "newSheet.png"
+sheets = H.img ! A.style "top:0px; left:0px;" ! A.id "image" ! A.src "img/newSheet.png"
 
 test :: String -> Html
 test x = docTypeHtml $ do
