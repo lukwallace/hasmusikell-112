@@ -37,17 +37,22 @@ sheets a b = H.img ! A.style (toValue(str)) ! A.id "image" ! A.src "img/newSheet
     		 where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
 
 
+
 test :: String -> Html
 test x = docTypeHtml $ do
 	H.head $ do
 		H.meta ! A.charset "uft-8"
 		H.style $ toHtml setupString
 	H.body $ do
-		H.div ! A.id "container" $ sheets 0 0
+		H.div ! A.id "container" $ do (sheets 0 0);
+									  (titleHtml x);
 
+
+halfOfAStanza = 700
+sizeOfALetter = 12
 titleHtml :: String -> Html
 titleHtml xs =  H.h1 ! A.style (toValue("top:0px; left:" ++ show a ++ "px;")) ! A.id "title" $ toHtml xs
-				where a = 1500 - (0.5*(fromIntegral(length xs))*10)
+				where a = halfOfAStanza - (0.5*(fromIntegral(length xs))*sizeOfALetter)
 
 unitHtml :: String -> Int -> Int -> Html
 unitHtml x a b
@@ -67,6 +72,8 @@ unitHtml x a b
     | x == "line"        = H.img ! A.style (toValue(str)) ! A.id "line" ! A.src "img/line.png"
     where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
 
+
+
 main = do
 	args <- getArgs;
 	contents <- readFile (Prelude.head args);
@@ -78,6 +85,6 @@ main = do
 					  
 		Right r -> do printSoundError r;
 					  print $ createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
-					  L.writeFile "blaze-test.html" (R.renderHtml (test "Title!"));				  
+					  L.writeFile "output.html" (R.renderHtml (test "Title goes here, it's long isn't it"));
 
 	     
