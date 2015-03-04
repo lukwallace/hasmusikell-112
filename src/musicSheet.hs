@@ -25,15 +25,14 @@ data Tone = Sharp | Flat | Natural | None deriving (Show)
 data Notes = A | B | C | D | E | F | G | Rest | Empty deriving (Show)
 
 data Sheet = Sheet { title :: String
-					,flats :: String
-					,sharps :: String
+					,flatsharp :: String
 					,song :: [[[Sound]]]
 				   } deriving (Show)
 
-data Sound = Note { tone :: Tone,
-					note :: Notes,
-					duration :: Float,
-					octave :: Int
+data Sound = Note {  tone :: Tone
+					,note :: Notes
+					,duration :: Float
+					,octave :: Int
 				  } | Chord [Sound] deriving(Show)
 
 
@@ -156,10 +155,10 @@ exactMatch (x, y, z)
 --takes the title, and a maybe string for the flat/sharps and returns
 --sheet object with the appropriate fields
 createSheet :: String -> Maybe String -> [[[Sound]]]-> Sheet
-createSheet title Nothing xsss  = Sheet title "" "" xsss
+createSheet title Nothing xsss  = Sheet title "" xsss
 createSheet title (Just line) xsss
-	| (head chunks) == "flats:"  = Sheet title (unwords $ tail $ chunks) "" xsss
-	| (head chunks) == "sharps:" = Sheet title "" (unwords $ tail $ chunks) xsss
+	| (head chunks) == "flats:"  = Sheet title ('f':(unwords $ tail $ chunks)) xsss
+	| (head chunks) == "sharps:" = Sheet title ('s':(unwords $ tail $ chunks)) xsss
 	where chunks = words line
 
 findTitle :: String -> String
