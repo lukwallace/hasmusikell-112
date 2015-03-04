@@ -7,10 +7,13 @@ import Text.Blaze.Html.Renderer.Utf8 as R
 import qualified Data.ByteString.Lazy as L
 import System.Environment
 import Text.ParserCombinators.Parsec as P
-import Data.List.Split as Z
-import Text.Regex.Posix
 import MusicSheet
 
+--For keeping track of data maybe? Or if we could learn to do w/ monads
+data CurrentPos = CurrPos {  yPx :: Int
+					 		,xPx :: Int
+						  }
+data Manager = M CurrentPos String
 
 setupString :: String
 setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
@@ -32,27 +35,15 @@ setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 			  "#beight{z-index:100;position:absolute;height: 50px;width: 50px;}" ++
 			  "#line{z-index:100;position:absolute;height: 50px;width: 50px;}"
 
-sheets :: Int -> Int -> Html
+sheetHtml :: Int -> Int -> Html
 sheets a b = H.img ! A.style (toValue(str)) ! A.id "image" ! A.src "img/newSheet.png"
     		 where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
 
-
-
-test :: String -> Html
-test x = docTypeHtml $ do
-	H.head $ do
-		H.meta ! A.charset "uft-8"
-		H.style $ toHtml setupString
-	H.body $ do
-		H.div ! A.id "container" $ do (sheets 0 0);
-									  (titleHtml x);
-
-
-halfOfAStanza = 700
-sizeOfALetter = 12
+halfOfStanza = 700
+sizeOfLetter = 12
 titleHtml :: String -> Html
 titleHtml xs =  H.h1 ! A.style (toValue("top:0px; left:" ++ show a ++ "px;")) ! A.id "title" $ toHtml xs
-				where a = halfOfAStanza - (0.5*(fromIntegral(length xs))*sizeOfALetter)
+				where a = halfOfStanza - (0.5*(fromIntegral(length xs))*sizeOfLetter)
 
 unitHtml :: String -> Int -> Int -> Html
 unitHtml x a b
@@ -72,6 +63,46 @@ unitHtml x a b
     | x == "line"        = H.img ! A.style (toValue(str)) ! A.id "line" ! A.src "img/line.png"
     where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
 
+
+--unfinished, will need more parameters for flat/sharp checking?
+soundToHtml :: Sound -> Int -> Int -> Html
+soundToHtml s y x = case s of
+	(Note None n d o) -> unitHtml (findUnitType d n) (yPos n o y) (xPos d x)
+	(Note Flat n d o) -> do (makeFlat);
+							unitHtml (findUnitType d n) (yPos n o y) (xPos d x)
+	(Note Sharp n d o) -> do (makesharp);
+							 unitHtml (findUnitType d n) (yPos n o y) (xPos d x)
+
+--for testing
+test :: String -> Html
+test x = docTypeHtml $ do
+	H.head $ do
+		H.meta ! A.charset "uft-8"
+		H.style $ toHtml setupString
+	H.body $ do
+		H.div ! A.id "container" $ do (sheetHtml 0 0);
+									  (titleHtml x);
+
+makeSheet :: Sheet -> Html
+makeSheet (Sheet t fs s) = docTypeHtml $ do
+	H.head $ do
+		H.meta ! A.charset "uft-8"
+		H.style $ toHtml setupString
+	H.body $ do
+		H.div ! A.id "container" $ do (sheetHtml 0 0);
+									  (titleHtml t);
+									  (songHtml fs s);
+
+songHtml :: String -> String -> [[[Sound]]] -> Html
+songHtml t s = do (printKeySig fs)
+				  (musicHtml (newManager fs) s)
+
+initX = 0
+initY = 0
+newManager :: String -> Manager
+newManager fs = Manager (C initY initX) fs
+
+musicHtml :: Manager -> [[[Sound]]] -> Html
 
 
 main = do
