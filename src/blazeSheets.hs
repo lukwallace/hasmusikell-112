@@ -1,19 +1,27 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Control.Monad (forM_)
+import Text.ParserCombinators.Parsec as P
 import Text.Blaze.Html5 as H
 import Text.Blaze.Html5.Attributes as A
 import Text.Blaze.Html.Renderer.Utf8 as R
 import qualified Data.ByteString.Lazy as L
 import System.Environment
-import Text.ParserCombinators.Parsec as P
+import Data.Map
 import MusicSheet
 
 --For keeping track of data maybe? Or if we could learn to do w/ monads
-data CurrentPos = CurrPos {  yPx :: Int
-					 		,xPx :: Int
-						  }
-data Manager = M CurrentPos String
+--The first int is the Y position, second is X position, and the String
+--represents the flats and sharps in the key signature
+data Manager = M Int Int String
+type noteMap = Map Float Int
+
+
+initX = 0
+initY = 0
+sizeOfStanza
+halfOfStanza = 700
+sizeOfLetter = 12
 
 setupString :: String
 setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
@@ -39,8 +47,7 @@ sheetHtml :: Int -> Int -> Html
 sheets a b = H.img ! A.style (toValue(str)) ! A.id "image" ! A.src "img/newSheet.png"
     		 where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
 
-halfOfStanza = 700
-sizeOfLetter = 12
+
 titleHtml :: String -> Html
 titleHtml xs =  H.h1 ! A.style (toValue("top:0px; left:" ++ show a ++ "px;")) ! A.id "title" $ toHtml xs
 				where a = halfOfStanza - (0.5*(fromIntegral(length xs))*sizeOfLetter)
@@ -91,18 +98,29 @@ makeSheet (Sheet t fs s) = docTypeHtml $ do
 	H.body $ do
 		H.div ! A.id "container" $ do (sheetHtml 0 0);
 									  (titleHtml t);
-									  (songHtml fs s);
+									  (songHtml (newManager fs) s);
 
-songHtml :: String -> String -> [[[Sound]]] -> Html
-songHtml t s = do (printKeySig fs)
-				  (musicHtml (newManager fs) s)
+songHtml :: Manager -> [[[Sound]]] -> Html
+songHtml m@(M y x fs) xsss = do fshtml
+							  	musicHtml newm xsss
+							where (fshtml, newm) = keySigHtml m xsss
 
-initX = 0
-initY = 0
 newManager :: String -> Manager
-newManager fs = Manager (C initY initX) fs
+newManager fs = Manager initY initX fs
+
+yInc :: Int -> Int
+yInc y = y + sizeOfStanza
+
 
 musicHtml :: Manager -> [[[Sound]]] -> Html
+musicHtml m@(M y x fs) (s:ss) = (printStanza m s) ++ musicHtml (M (yInc y) x fs) ss
+
+
+keySigHtml :: Manager -> [[[Sound]]] -> (Html, Manager)
+keySigHtml m xsss = foldl (makeKeySig) ("",m) xsss
+
+makeKeySig :: (Html, Manager) -> [[Sound]] -> (Html, Manager)
+makeKeySig (h, (M y x fs)) _ = 
 
 
 main = do
@@ -117,5 +135,3 @@ main = do
 		Right r -> do printSoundError r;
 					  print $ createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
 					  L.writeFile "output.html" (R.renderHtml (test "Title goes here, it's long isn't it"));
-
-	     
