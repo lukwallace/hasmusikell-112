@@ -14,14 +14,15 @@ import MusicSheet
 --The first int is the Y position, second is X position, and the String
 --represents the flats and sharps in the key signature
 data Manager = M Int Int String
-type noteMap = Map Float Int
+type NoteMap = Map Float Int
 
 
 initX = 0
 initY = 0
-sizeOfStanza
+sizeOfStanza = 130
 halfOfStanza = 700
 sizeOfLetter = 12
+sizeOfMeasure = 275
 
 setupString :: String
 setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
@@ -36,7 +37,7 @@ setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 			  "#halfrest{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#forth-rest{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#eightrest{z-index:100;position:absolute;height: 50px;width: 50px;}"++
-			  "#flag{z-index:100;position:absolute;height: 50px;width: 50px;}"++
+			  "#flat{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#natural{z-index:100;position:absolute;height: 60px;width: 50px;}"++
 			  "#sharp{z-index:100;position:absolute;height: 60px;width: 50px;}"++
 			  "#commontime{z-index:100;position:absolute;height: 50px;width: 50px;}"++
@@ -63,13 +64,20 @@ unitHtml x a b
     | x == "halfrest"    = H.img ! A.style (toValue(str)) ! A.id "halfrest" ! A.src "img/halfrest.png"
     | x == "forth-rest"  = H.img ! A.style (toValue(str)) ! A.id "forth-rest" ! A.src "img/4th-rest.png"
     | x == "eightrest"   = H.img ! A.style (toValue(str)) ! A.id "eightrest" ! A.src "img/eightrest.png"
-    | x == "flag"        = H.img ! A.style (toValue(str)) ! A.id "flag" ! A.src "img/flag.png"
+    | x == "flat"        = H.img ! A.style (toValue(str)) ! A.id "flat" ! A.src "img/flag.png"
     | x == "natural"     = H.img ! A.style (toValue(str)) ! A.id "natural" ! A.src "img/natural.png"
     | x == "sharp"       = H.img ! A.style (toValue(str)) ! A.id "sharp" ! A.src "img/sharp.png"
     | x == "commontime"  = H.img ! A.style (toValue(str)) ! A.id "commontime" ! A.src "img/commontime.png"
     | x == "line"        = H.img ! A.style (toValue(str)) ! A.id "line" ! A.src "img/line.png"
     where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
 
+flatSharpHtml :: Int -> Int -> Tone -> Html
+flatSharpHtml y x a
+    | a == Flat        = H.img ! A.style (toValue(str)) ! A.id "flag" ! A.src "img/flag.png"
+    | a == Natural     = H.img ! A.style (toValue(str)) ! A.id "natural" ! A.src "img/natural.png"
+    | a == Sharp       = H.img ! A.style (toValue(str)) ! A.id "sharp" ! A.src "img/sharp.png"
+    | otherwise = []
+    where str = "top:" ++ show y ++ "px; left:" ++ show x ++ "px;"
 
 --unfinished, will need more parameters for flat/sharp checking?
 soundToHtml :: Sound -> Int -> Int -> Html
@@ -111,16 +119,73 @@ newManager fs = Manager initY initX fs
 yInc :: Int -> Int
 yInc y = y + sizeOfStanza
 
+xInc :: Int -> Int
+xInc x = x + sizeOfMeasure
+
 
 musicHtml :: Manager -> [[[Sound]]] -> Html
-musicHtml m@(M y x fs) (s:ss) = (printStanza m s) ++ musicHtml (M (yInc y) x fs) ss
+musicHtml m@(M y x fs) [] = []
+musicHtml m@(M y x fs) (s:ss) = do printStanza m s
+                                   musicHtml (M (yInc y) x fs) ss
 
+printStanza :: Manager -> [[Sound]] -> Html
+printStanza m@(M y x fs) [] = []
+printStanza m@(M y x fs) (s:ss) = do printMeasure m s 
+                                     printStanza (M y (xInc x) fs) ss
+
+printMeasure :: Manager -> [Sound] -> Html
+printMeasure m@(M y x fs) [] = []
+printMeasure m@(M y x fs) (s:ss) = do printNote m s
+                                      printMeasure (M y (xDona x s) fs) ss
+
+printNote :: Manager -> Sound -> Html
+printNote (M y x fs) s = case s of 
+	                       Note {a,b,c,d} -> do noteHtml y x fs a b c d
+	                       Chore a      -> do printNote (M y x fs) a!!0
+	                                          printNote (M y x fs) (tail a)
+	                       otherwise -> []
+
+noteHtml :: Int -> Int -> String -> Tone -> Notes -> Float -> Int -> Html
+noteHtml y x fs a b c d 
+       | (c == 1 && b /= N 'r') = do unitHtml "whole" (y + scale(b) + (d*35)) x
+                                     checkFS (y + scale(b) + (d*35)) x a changeFS(fs b)
+
+changeFS :: String -> Notes -> Tone
+changeFS [] (N b) = None
+changeFS (fs:fss) (N b) = if fs == b then do getFS(last fss) else changeFS fss (N b)
+
+getFS :: Char -> Tone
+getFS fss 
+     | fss == 'f' = Flat
+     | fss == 's' = Sharp
+
+scale :: Notes -> Int
+scale b 
+    | b == N 'C' = 0
+    | b == N 'A' = -10
+    | b == N 'B' = -5
+    | b == N 'D' = 5
+    | b == N 'E' = 10
+    | b == N 'F' = 15
+    | b == N 'G' = 20
+    | b == N 'r' = 0
+    | otherwise = 0
+
+checkFS :: Int -> Int -> Tone -> Tone -> Html
+checkFS y x a fs 
+      | a == fs = []
+      | otherwise = flatSharpHtml y (x-25) a
+--increment for donation
+xDona :: Int -> Sound -> Int
+xDona x s = case s of 
+	           Note {a,b,c,d} -> x + floor(c*sizeOfMeasure)
+	           Chore a      -> xDona x (head a)
 
 keySigHtml :: Manager -> [[[Sound]]] -> (Html, Manager)
 keySigHtml m xsss = foldl (makeKeySig) ("",m) xsss
 
-makeKeySig :: (Html, Manager) -> [[Sound]] -> (Html, Manager)
-makeKeySig (h, (M y x fs)) _ = 
+--makeKeySig :: (Html, Manager) -> [[Sound]] -> (Html, Manager)
+--makeKeySig (h, (M y x fs)) _ = 
 
 
 main = do
