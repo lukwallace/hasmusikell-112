@@ -22,7 +22,7 @@ eol = 	try (string "\n\r")
 {-=================The Data Representations =====================-}
 
 data Tone = Sharp | Flat | Natural | None deriving (Show)
-data Notes = A | B | C | D | E | F | G | Rest | Empty deriving (Show)
+data Notes = N Char deriving (Show)
 
 data Sheet = Sheet { title :: String
 					,flatsharp :: String
@@ -215,16 +215,16 @@ toneSearch xs
     | otherwise             = toneSearch (tail xs)
 
 noteSearch :: String -> Notes
-noteSearch [] = Empty
+noteSearch [] = N 'e'
 noteSearch xs 
-    | (head xs) == 'A'      = A
-    | (head xs) == 'B'      = B
-    | (head xs) == 'C'      = C
-    | (head xs) == 'D'      = D
-    | (head xs) == 'E'      = E
-    | (head xs) == 'F'      = F
-    | (head xs) == 'G'      = G
-    | (head xs) == 'r'      = Rest
+    | (head xs) == 'A'      = N 'A'
+    | (head xs) == 'B'      = N 'B'
+    | (head xs) == 'C'      = N 'C'
+    | (head xs) == 'D'      = N 'D'
+    | (head xs) == 'E'      = N 'E'
+    | (head xs) == 'F'      = N 'F'
+    | (head xs) == 'G'      = N 'G'
+    | (head xs) == 'r'      = N 'r'
     | otherwise             = noteSearch (tail xs)
 
 durationSearch :: String -> Float
