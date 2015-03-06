@@ -134,10 +134,24 @@ printKeySig fs x y = case (Prelude.head fs) of
 			  			('s') -> sharpHtml (tail fs) y x
 
 flatHtml :: String -> Int -> Int -> Html
-flatHtml fs y x = "Nope"
+flatHtml [] y x = ""
+flatHtml f y x = do unitHtml "flat" (yMapping (head f) y) x;
+					(flatHtml (tail f) y (x+sizeOfFlat));
+
+yMapping :: Char -> Int
+yMapping c initY = case c of
+	'C' -> initY
+	'D' -> initY + (1*sizeOfTone)
+	'E' -> initY + (2*sizeOfTone)
+	'F' -> initY + (3*sizeOfTone)
+	'G' -> initY + (4*sizeOfTone)
+	'A' -> initY + (5*sizeOfTone)
+	'B' -> initY + (6*sizeOfTone)
 
 sharpHtml :: String -> Int -> Int -> Html
-sharpHtml fs y x  = "Nope"
+sharpHtml [] y x  = ""
+sharpHtml s y x = do unitHtml "sharp" (yMapping (head s) y) x;
+					(sharpHtml (tail f) y (x+sizeOfFlat));
 
 
 main = do
