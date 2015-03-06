@@ -55,20 +55,21 @@ titleHtml :: String -> Html
 titleHtml xs =  H.h1 ! A.style (toValue("top:0px; left:" ++ show a ++ "px;")) ! A.id "title" $ toHtml xs
 				where a = halfOfStanza - (0.5*(fromIntegral(length xs))*sizeOfLetter)
 
-unitHtml :: String -> Int -> Int -> Html
-unitHtml x a b
-    | x == "fourth"      = H.img ! A.style (toValue(str)) ! A.id "fourth" ! A.src "img/4th-note.png"
-    | x == "eighth"      = H.img ! A.style (toValue(str)) ! A.id "eighth" ! A.src "img/8th-note.png"
-    | x == "sixteen"     = H.img ! A.style (toValue(str)) ! A.id "sixteen" ! A.src "img/16th-note.png"
-    | x == "whole"       = H.img ! A.style (toValue(str)) ! A.id "whole" ! A.src "img/whole-note.png"
-    | x == "half"        = H.img ! A.style (toValue(str)) ! A.id "half" ! A.src "img/half-note.png"
-    | x == "wholerest"   = H.img ! A.style (toValue(str)) ! A.id "wholerest" ! A.src "img/wholerest.png"
-    | x == "halfrest"    = H.img ! A.style (toValue(str)) ! A.id "halfrest" ! A.src "img/halfrest.png"
-    | x == "forth-rest"  = H.img ! A.style (toValue(str)) ! A.id "forth-rest" ! A.src "img/4th-rest.png"
-    | x == "eightrest"   = H.img ! A.style (toValue(str)) ! A.id "eightrest" ! A.src "img/eightrest.png"
-    | x == "flat"        = H.img ! A.style (toValue(str)) ! A.id "flat" ! A.src "img/flag.png"
-    | x == "natural"     = H.img ! A.style (toValue(str)) ! A.id "natural" ! A.src "img/natural.png"
-    | x == "sharp"       = H.img ! A.style (toValue(str)) ! A.id "sharp" ! A.src "img/sharp.png"
+unitHtml :: Notes -> Float -> Int -> Int -> Html
+unitHtml (N n) f a b
+    | (f == 1/4 && n /= 'r')      = H.img ! A.style (toValue(str)) ! A.id "fourth" ! A.src "img/4th-note.png"
+    | (f == 1/8 && n /= 'r')      = H.img ! A.style (toValue(str)) ! A.id "eighth" ! A.src "img/8th-note.png"
+    | (f == 1/16 && n /= 'r')     = H.img ! A.style (toValue(str)) ! A.id "sixteen" ! A.src "img/16th-note.png"
+    | (f == 1 && n /= 'r')        = H.img ! A.style (toValue(str)) ! A.id "whole" ! A.src "img/whole-note.png"
+    | (f == 1/2 && n /= 'r')      = H.img ! A.style (toValue(str)) ! A.id "half" ! A.src "img/half-note.png"
+    | (f == 1 && n == 'r')        = H.img ! A.style (toValue(str)) ! A.id "wholerest" ! A.src "img/wholerest.png"
+    | (f == 1/2 && n == 'r')      = H.img ! A.style (toValue(str)) ! A.id "halfrest" ! A.src "img/halfrest.png"
+    | (f == 1/4 && n == 'r')      = H.img ! A.style (toValue(str)) ! A.id "forth-rest" ! A.src "img/4th-rest.png"
+    | (f == 1/8 && n == 'r')      = H.img ! A.style (toValue(str)) ! A.id "eightrest" ! A.src "img/eightrest.png"
+    where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
+
+unit2Html :: String -> Int -> Int -> Html
+unit2Html x a b 
     | x == "commontime"  = H.img ! A.style (toValue(str)) ! A.id "commontime" ! A.src "img/commontime.png"
     | x == "line"        = H.img ! A.style (toValue(str)) ! A.id "line" ! A.src "img/line.png"
     where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
@@ -148,9 +149,8 @@ printNote (M y x fs) s = case s of
 	                       otherwise -> []
 
 noteHtml :: Int -> Int -> String -> Tone -> Notes -> Float -> Int -> Html
-noteHtml y x fs a b c d 
-       | (c == 1 && b /= N 'r') = do unitHtml "whole" (y + scale(b) + (d*35)) x
-                                     checkFS (y + scale(b) + (d*35)) x a changeFS(fs b)
+noteHtml y x fs a b c d = do unitHtml b c (y + scale(b) + (d*35)) x
+                             checkFS (y + scale(b) + (d*35)) x a changeFS(fs b)
 
 changeFS :: String -> Notes -> Tone
 changeFS [] (N b) = None
