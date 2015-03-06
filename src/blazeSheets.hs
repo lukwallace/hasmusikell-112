@@ -20,8 +20,12 @@ type NoteMap = Map Float Int
 initX = 0
 initY = 0
 sizeOfStanza = 0
-halfOfStanza = 700
 sizeOfLetter = 12
+sizeOfFlat = 0
+sizeOfSharp = 0
+sizeOfUnit = 0
+halfOfStanza = 700
+
 
 setupString :: String
 setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
@@ -138,21 +142,20 @@ flatHtml [] y x = ""
 flatHtml f y x = do unitHtml "flat" (yMapping (head f) y) x;
 					(flatHtml (tail f) y (x+sizeOfFlat));
 
-yMapping :: Char -> Int
-yMapping c initY = case c of
-	'C' -> initY
-	'D' -> initY + (1*sizeOfTone)
-	'E' -> initY + (2*sizeOfTone)
-	'F' -> initY + (3*sizeOfTone)
-	'G' -> initY + (4*sizeOfTone)
-	'A' -> initY + (5*sizeOfTone)
-	'B' -> initY + (6*sizeOfTone)
-
 sharpHtml :: String -> Int -> Int -> Html
 sharpHtml [] y x  = ""
 sharpHtml s y x = do unitHtml "sharp" (yMapping (head s) y) x;
-					(sharpHtml (tail f) y (x+sizeOfFlat));
+					(sharpHtml (tail f) y (x+sizeOfSharp));
 
+yMapping :: Char -> Int
+yMapping c initY = case c of
+	'C' -> initY
+	'D' -> initY + (1*sizeOfUnit)
+	'E' -> initY + (2*sizeOfUnit)
+	'F' -> initY + (3*sizeOfUnit)
+	'G' -> initY + (4*sizeOfUnit = 0)
+	'A' -> initY + (5*sizeOfUnit = 0)
+	'B' -> initY + (6*sizeOfUnit = 0)
 
 main = do
 	args <- getArgs;
