@@ -37,7 +37,7 @@ setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 			  "#halfrest{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#forth-rest{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#eightrest{z-index:100;position:absolute;height: 50px;width: 50px;}"++
-			  "#flag{z-index:100;position:absolute;height: 50px;width: 50px;}"++
+			  "#flat{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#natural{z-index:100;position:absolute;height: 60px;width: 50px;}"++
 			  "#sharp{z-index:100;position:absolute;height: 60px;width: 50px;}"++
 			  "#commontime{z-index:100;position:absolute;height: 50px;width: 50px;}"++
@@ -64,7 +64,7 @@ unitHtml x a b
     | x == "halfrest"    = H.img ! A.style (toValue(str)) ! A.id "halfrest" ! A.src "img/halfrest.png"
     | x == "forth-rest"  = H.img ! A.style (toValue(str)) ! A.id "forth-rest" ! A.src "img/4th-rest.png"
     | x == "eightrest"   = H.img ! A.style (toValue(str)) ! A.id "eightrest" ! A.src "img/eightrest.png"
-    | x == "flag"        = H.img ! A.style (toValue(str)) ! A.id "flag" ! A.src "img/flag.png"
+    | x == "flat"        = H.img ! A.style (toValue(str)) ! A.id "flat" ! A.src "img/flag.png"
     | x == "natural"     = H.img ! A.style (toValue(str)) ! A.id "natural" ! A.src "img/natural.png"
     | x == "sharp"       = H.img ! A.style (toValue(str)) ! A.id "sharp" ! A.src "img/sharp.png"
     | x == "commontime"  = H.img ! A.style (toValue(str)) ! A.id "commontime" ! A.src "img/commontime.png"
