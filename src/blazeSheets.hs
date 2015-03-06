@@ -7,15 +7,12 @@ import Text.Blaze.Html5.Attributes as A
 import Text.Blaze.Html.Renderer.Utf8 as R
 import qualified Data.ByteString.Lazy as L
 import System.Environment
-import Data.Map as D
 import MusicSheet
 
 --For keeping track of data maybe? Or if we could learn to do w/ monads
 --The first int is the Y position, second is X position, and the String
 --represents the flats and sharps in the key signature
 data Manager = M Int Int String
-type NoteMap = Map Float Int
-
 
 initX = 0
 initY = 0
@@ -48,30 +45,30 @@ setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 			  "#line{z-index:100;position:absolute;height: 50px;width: 50px;}"
 
 sheetHtml :: Int -> Int -> Html
-sheetHtml a b = H.img H.! A.style (toValue(str)) H.! A.id "image" H.! A.src "img/newSheet.png"
+sheetHtml a b = H.img ! A.style (toValue(str)) ! A.id "image" ! A.src "img/newSheet.png"
     		 where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
 
 
 titleHtml :: String -> Html
-titleHtml xs =  H.h1 H.! A.style (toValue("top:0px; left:" ++ show a ++ "px;")) H.! A.id "title" $ toHtml xs
+titleHtml xs =  H.h1 ! A.style (toValue("top:0px; left:" ++ show a ++ "px;")) ! A.id "title" $ toHtml xs
 				where a = halfOfStanza - (0.5*(fromIntegral(length xs))*sizeOfLetter)
 
 unitHtml :: String -> Int -> Int -> Html
 unitHtml x a b
-    | x == "fourth"      = H.img H.! A.style (toValue(str)) H.! A.id "fourth" H.! A.src "img/4th-note.png"
-    | x == "eighth"      = H.img H.! A.style (toValue(str)) H.! A.id "eighth" H.! A.src "img/8th-note.png"
-    | x == "sixteen"     = H.img H.! A.style (toValue(str)) H.! A.id "sixteen" H.! A.src "img/16th-note.png"
-    | x == "whole"       = H.img H.! A.style (toValue(str)) H.! A.id "whole" H.! A.src "img/whole-note.png"
-    | x == "half"        = H.img H.! A.style (toValue(str)) H.! A.id "half" H.! A.src "img/half-note.png"
-    | x == "wholerest"   = H.img H.! A.style (toValue(str)) H.! A.id "wholerest" H.! A.src "img/wholerest.png"
-    | x == "halfrest"    = H.img H.! A.style (toValue(str)) H.! A.id "halfrest" H.! A.src "img/halfrest.png"
-    | x == "forth-rest"  = H.img H.! A.style (toValue(str)) H.! A.id "forth-rest" H.! A.src "img/4th-rest.png"
-    | x == "eightrest"   = H.img H.! A.style (toValue(str)) H.! A.id "eightrest" H.! A.src "img/eightrest.png"
-    | x == "flag"        = H.img H.! A.style (toValue(str)) H.! A.id "flag" H.! A.src "img/flag.png"
-    | x == "natural"     = H.img H.! A.style (toValue(str)) H.! A.id "natural" H.! A.src "img/natural.png"
-    | x == "sharp"       = H.img H.! A.style (toValue(str)) H.! A.id "sharp" H.! A.src "img/sharp.png"
-    | x == "commontime"  = H.img H.! A.style (toValue(str)) H.! A.id "commontime" H.! A.src "img/commontime.png"
-    | x == "line"        = H.img H.! A.style (toValue(str)) H.! A.id "line" H.! A.src "img/line.png"
+    | x == "fourth"      = H.img ! A.style (toValue(str)) ! A.id "fourth" ! A.src "img/4th-note.png"
+    | x == "eighth"      = H.img ! A.style (toValue(str)) ! A.id "eighth" ! A.src "img/8th-note.png"
+    | x == "sixteen"     = H.img ! A.style (toValue(str)) ! A.id "sixteen" ! A.src "img/16th-note.png"
+    | x == "whole"       = H.img ! A.style (toValue(str)) ! A.id "whole" ! A.src "img/whole-note.png"
+    | x == "half"        = H.img ! A.style (toValue(str)) ! A.id "half" ! A.src "img/half-note.png"
+    | x == "wholerest"   = H.img ! A.style (toValue(str)) ! A.id "wholerest" ! A.src "img/wholerest.png"
+    | x == "halfrest"    = H.img ! A.style (toValue(str)) ! A.id "halfrest" ! A.src "img/halfrest.png"
+    | x == "forth-rest"  = H.img ! A.style (toValue(str)) ! A.id "forth-rest" ! A.src "img/4th-rest.png"
+    | x == "eightrest"   = H.img ! A.style (toValue(str)) ! A.id "eightrest" ! A.src "img/eightrest.png"
+    | x == "flag"        = H.img ! A.style (toValue(str)) ! A.id "flag" ! A.src "img/flag.png"
+    | x == "natural"     = H.img ! A.style (toValue(str)) ! A.id "natural" ! A.src "img/natural.png"
+    | x == "sharp"       = H.img ! A.style (toValue(str)) ! A.id "sharp" ! A.src "img/sharp.png"
+    | x == "commontime"  = H.img ! A.style (toValue(str)) ! A.id "commontime" ! A.src "img/commontime.png"
+    | x == "line"        = H.img ! A.style (toValue(str)) ! A.id "line" ! A.src "img/line.png"
     where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
 
 
@@ -88,19 +85,19 @@ soundToHtml s y x = case s of
 test :: String -> Html
 test x = docTypeHtml $ do
 	H.head $ do
-		H.meta H.! A.charset "uft-8"
+		H.meta ! A.charset "uft-8"
 		H.style $ toHtml setupString
 	H.body $ do
-		H.div H.! A.id "container" $ do (sheetHtml 0 0);
+		H.div ! A.id "container" $ do (sheetHtml 0 0);
 									  	(titleHtml x);
 
 makeSheet :: Sheet -> Html
 makeSheet (Sheet t fs s) = docTypeHtml $ do
 	H.head $ do
-		H.meta H.! A.charset "uft-8"
+		H.meta ! A.charset "uft-8"
 		H.style $ toHtml setupString
 	H.body $ do
-		H.div H.! A.id "container" $ do (sheetHtml 0 0);
+		H.div ! A.id "container" $ do (sheetHtml 0 0);
 									  (titleHtml t);
 									  (songHtml (newManager fs) s);
 
@@ -124,7 +121,7 @@ printStanza :: Manager -> [[Sound]] -> Html
 printStanza m@(M y x fs) (s:ss) = "Nope"
 
 keySigHtml :: Manager -> [[[Sound]]] -> (Html, Manager)
-keySigHtml m xsss = Prelude.foldl (makeKeySig) ("",m) xsss
+keySigHtml m xsss = foldl (makeKeySig) ("",m) xsss
 
 makeKeySig :: (Html, Manager) -> [[Sound]] -> (Html, Manager)
 makeKeySig (h, (M y x fs)) anything = (nh, (M ny x fs))
@@ -139,23 +136,23 @@ printKeySig fs x y = case (Prelude.head fs) of
 
 flatHtml :: String -> Int -> Int -> Html
 flatHtml [] y x = ""
-flatHtml f y x = do unitHtml "flat" (yMapping (head f) y) x;
+flatHtml f y x = do unitHtml "flat" (yMapping (Prelude.head f) y) x;
 					(flatHtml (tail f) y (x+sizeOfFlat));
 
 sharpHtml :: String -> Int -> Int -> Html
 sharpHtml [] y x  = ""
-sharpHtml s y x = do unitHtml "sharp" (yMapping (head s) y) x;
-					(sharpHtml (tail f) y (x+sizeOfSharp));
+sharpHtml s y x = do unitHtml "sharp" (yMapping (Prelude.head s) y) x;
+					(sharpHtml (tail s) y (x+sizeOfSharp));
 
-yMapping :: Char -> Int
+yMapping :: Char -> Int -> Int
 yMapping c initY = case c of
 	'C' -> initY
 	'D' -> initY + (1*sizeOfUnit)
 	'E' -> initY + (2*sizeOfUnit)
 	'F' -> initY + (3*sizeOfUnit)
-	'G' -> initY + (4*sizeOfUnit = 0)
-	'A' -> initY + (5*sizeOfUnit = 0)
-	'B' -> initY + (6*sizeOfUnit = 0)
+	'G' -> initY + (4*sizeOfUnit)
+	'A' -> initY + (5*sizeOfUnit)
+	'B' -> initY + (6*sizeOfUnit)
 
 main = do
 	args <- getArgs;
