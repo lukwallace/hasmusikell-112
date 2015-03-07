@@ -1,3 +1,3 @@
 title: This isn't a real title
 sharps: ABC
-#A4 C2 F4| F4 F4 F4 F4
+bA4 C2 bF4| #F4 #F4 #F4 #F4| bC4 C4 C4 C4| A1

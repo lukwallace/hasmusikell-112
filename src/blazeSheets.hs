@@ -16,10 +16,10 @@ data Manager = M Int Int String
 
 
 initX = 110
-initY = 85
+initY = 105
 sizeOfStanza = 130
 sizeOfLetter = 12
-sizeOfFlatSharp = 50
+sizeOfFlatSharp = 25
 sizeOfUnit = 5
 sizeOfMeasure = 275
 halfOfStanza = 700
@@ -39,8 +39,8 @@ setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 			  "#forth-rest{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#eightrest{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#flat{z-index:100;position:absolute;height: 50px;width: 50px;}"++
-			  "#natural{z-index:100;position:absolute;height: 60px;width: 50px;}"++
-			  "#sharp{z-index:100;position:absolute;height: 60px;width: 50px;}"++
+			  "#natural{z-index:100;position:absolute;height: 50px;width: 50px;}"++
+			  "#sharp{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#commontime{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#beight{z-index:100;position:absolute;height: 50px;width: 50px;}" ++
 			  "#line{z-index:100;position:absolute;height: 50px;width: 50px;}"
@@ -75,9 +75,10 @@ unitHtml x a b
 
 flatSharpHtml :: Int -> Int -> Tone -> Html
 flatSharpHtml y x a = case a of
-                        (Flat) -> H.img ! A.style (toValue(str)) ! A.id "flag" ! A.src "img/flag.png"
+                        (Flat) -> H.img ! A.style (toValue(str)) ! A.id "flat" ! A.src "img/flag.png"
                         (Natural) -> H.img ! A.style (toValue(str)) ! A.id "natural" ! A.src "img/natural.png"
                         (Sharp) ->  H.img ! A.style (toValue(str)) ! A.id "sharp" ! A.src "img/sharp.png"
+                        otherwise -> ""
                        where str = "top:" ++ show y ++ "px; left:" ++ show x ++ "px;"
 
 --unfinished, will need more parameters for flat/sharp checking?
@@ -169,12 +170,12 @@ getFS fss
 scale :: Notes -> Int
 scale b = case b of 
             (N 'C') -> 0
-            (N 'A') -> 25
-            (N 'B') -> 30
-            (N 'D') -> 5
-            (N 'E') -> 10
-            (N 'F') -> 15
-            (N 'G') -> 20
+            (N 'A') -> -25
+            (N 'B') -> -30
+            (N 'D') -> -5
+            (N 'E') -> -10
+            (N 'F') -> -15
+            (N 'G') -> -20
             (N 'r') -> 0 --this shouldn't be zero?
 --check for redu
 checkFS :: Int -> Int -> Tone -> Tone -> Html
@@ -199,7 +200,7 @@ makeKeySig (h, (M y x fs)) anything = (nh, (M ny x fs))
 			          (printKeySig fs y x);
 
 printKeySig :: String -> Int -> Int -> Html
-printKeySig fs x y = case (Prelude.head fs) of
+printKeySig fs y x = case (Prelude.head fs) of
 			   			('f') -> flatHtml (tail fs) y x
 			  			('s') -> sharpHtml (tail fs) y x
 
@@ -211,17 +212,17 @@ flatHtml f y x = do flatSharpHtml (yMapping (Prelude.head f) y) x Flat;
 sharpHtml :: String -> Int -> Int -> Html
 sharpHtml [] y x  = ""
 sharpHtml s y x = do flatSharpHtml (yMapping (Prelude.head s) y) x Sharp ;
-					(sharpHtml (tail s) y (x+sizeOfFlatSharp));
+					 (sharpHtml (tail s) y (x+sizeOfFlatSharp));
 
 yMapping :: Char -> Int -> Int
 yMapping c initY = case c of
 	'C' -> initY
-	'D' -> initY + (1*sizeOfUnit)
-	'E' -> initY + (2*sizeOfUnit)
-	'F' -> initY + (3*sizeOfUnit)
-	'G' -> initY + (4*sizeOfUnit)
-	'A' -> initY + (5*sizeOfUnit)
-	'B' -> initY + (6*sizeOfUnit)
+	'D' -> initY - (1*sizeOfUnit)
+	'E' -> initY - (2*sizeOfUnit)
+	'F' -> initY - (3*sizeOfUnit)
+	'G' -> initY - (4*sizeOfUnit)
+	'A' -> initY - (5*sizeOfUnit)
+	'B' -> initY - (6*sizeOfUnit)
 
 main = do
 	args <- getArgs;
@@ -234,4 +235,5 @@ main = do
 					  
 		Right r -> do printSoundError r;
 					  print $ createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
-					  L.writeFile "output.html" (R.renderHtml (test "Title goes here, it's long isn't it"));
+					  L.writeFile "output.html" (R.renderHtml (makeSheet te));
+					   where te = createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
