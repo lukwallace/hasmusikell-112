@@ -15,8 +15,8 @@ import MusicSheet
 data Manager = M Int Int String
 
 
-initX = 0
-initY = 0
+initX = 110
+initY = 85
 sizeOfStanza = 130
 sizeOfLetter = 12
 sizeOfFlat = 50
@@ -55,8 +55,8 @@ titleHtml :: String -> Html
 titleHtml xs =  H.h1 ! A.style (toValue("top:0px; left:" ++ show a ++ "px;")) ! A.id "title" $ toHtml xs
 				where a = halfOfStanza - (0.5*(fromIntegral(length xs))*sizeOfLetter)
 
-unitHtml :: Notes -> Float -> Int -> Int -> Html
-unitHtml (N n) f a b
+notesHtml :: Notes -> Float -> Int -> Int -> Html
+notesHtml (N n) f a b
     | (f == 1/4 && n /= 'r')      = H.img ! A.style (toValue(str)) ! A.id "fourth" ! A.src "img/4th-note.png"
     | (f == 1/8 && n /= 'r')      = H.img ! A.style (toValue(str)) ! A.id "eighth" ! A.src "img/8th-note.png"
     | (f == 1/16 && n /= 'r')     = H.img ! A.style (toValue(str)) ! A.id "sixteen" ! A.src "img/16th-note.png"
@@ -68,19 +68,18 @@ unitHtml (N n) f a b
     | (f == 1/8 && n == 'r')      = H.img ! A.style (toValue(str)) ! A.id "eightrest" ! A.src "img/eightrest.png"
     where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
 
-unit2Html :: String -> Int -> Int -> Html
-unit2Html x a b 
+unitHtml :: String -> Int -> Int -> Html
+unitHtml x a b 
     | x == "commontime"  = H.img ! A.style (toValue(str)) ! A.id "commontime" ! A.src "img/commontime.png"
     | x == "line"        = H.img ! A.style (toValue(str)) ! A.id "line" ! A.src "img/line.png"
     where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
 
 flatSharpHtml :: Int -> Int -> Tone -> Html
-flatSharpHtml y x a
-    | a == Flat        = H.img ! A.style (toValue(str)) ! A.id "flag" ! A.src "img/flag.png"
-    | a == Natural     = H.img ! A.style (toValue(str)) ! A.id "natural" ! A.src "img/natural.png"
-    | a == Sharp       = H.img ! A.style (toValue(str)) ! A.id "sharp" ! A.src "img/sharp.png"
-    | otherwise = []
-    where str = "top:" ++ show y ++ "px; left:" ++ show x ++ "px;"
+flatSharpHtml y x a = case a of
+                        (Flat) -> H.img ! A.style (toValue(str)) ! A.id "flag" ! A.src "img/flag.png"
+                        (Natural) -> H.img ! A.style (toValue(str)) ! A.id "natural" ! A.src "img/natural.png"
+                        (Sharp) ->  H.img ! A.style (toValue(str)) ! A.id "sharp" ! A.src "img/sharp.png"
+                       where str = "top:" ++ show y ++ "px; left:" ++ show x ++ "px;"
 
 --unfinished, will need more parameters for flat/sharp checking?
 {-soundToHtml :: Sound -> Int -> Int -> Html
@@ -99,7 +98,7 @@ test x = docTypeHtml $ do
 		H.style $ toHtml setupString
 	H.body $ do
 		H.div ! A.id "container" $ do (sheetHtml 0 0);
-									  	(titleHtml x);
+									  (titleHtml x);
 
 makeSheet :: Sheet -> Html
 makeSheet (Sheet t fs s) = docTypeHtml $ do
@@ -127,61 +126,59 @@ xInc x = x + sizeOfMeasure
 
 
 musicHtml :: Manager -> [[[Sound]]] -> Html
-musicHtml m@(M y x fs) [] = []
+musicHtml m@(M y x fs) [] = ""
 musicHtml m@(M y x fs) (s:ss) = do printStanza m s
                                    musicHtml (M (yInc y) x fs) ss
 
 printStanza :: Manager -> [[Sound]] -> Html
-printStanza m@(M y x fs) [] = []
+printStanza m@(M y x fs) [] = ""
 printStanza m@(M y x fs) (s:ss) = do printMeasure m s 
                                      printStanza (M y (xInc x) fs) ss
 
 printMeasure :: Manager -> [Sound] -> Html
-printMeasure m@(M y x fs) [] = []
+printMeasure m@(M y x fs) [] = ""
 printMeasure m@(M y x fs) (s:ss) = do printNote m s
                                       printMeasure (M y (xDona x s) fs) ss
 
 printNote :: Manager -> Sound -> Html
-printNote (M y x fs) s = case s of 
-	                       Note {a,b,c,d} -> do noteHtml y x fs a b c d
-	                       Chore a      -> do printNote (M y x fs) a!!0
-	                                          printNote (M y x fs) (tail a)
-	                       otherwise -> []
+printNote m@(M y x fs) s = case s of 
+	                         Note {tone =a,note =b,duration =c,octave = d} -> do noteHtml y x fs a b c d
+	                         Chord a      -> do printNote m (a!!0)
+	                                            if length a < 2 then printNote m (Chord (tail a)) else ""
 
 noteHtml :: Int -> Int -> String -> Tone -> Notes -> Float -> Int -> Html
-noteHtml y x fs a b c d = do unitHtml b c (y + scale(b) + (d*35)) x
-                             checkFS (y + scale(b) + (d*35)) x a changeFS(fs b)
+noteHtml y x fs a b c d = do notesHtml b c (y + scale(b) + (d*35)) x
+                             checkFS (y + scale(b) + (d*35)) x a (changeFS b fs)
 
-changeFS :: String -> Notes -> Tone
-changeFS [] (N b) = None
-changeFS (fs:fss) (N b) = if fs == b then do getFS(last fss) else changeFS fss (N b)
+changeFS :: Notes -> String ->Tone
+changeFS (N b) [] = None
+changeFS (N b) fs = if b `elem` (tail fs) then do getFS(Prelude.head fs) else None
 
 getFS :: Char -> Tone
 getFS fss 
      | fss == 'f' = Flat
      | fss == 's' = Sharp
-
+--change y position for each scale
 scale :: Notes -> Int
-scale b 
-    | b == N 'C' = 0
-    | b == N 'A' = -10
-    | b == N 'B' = -5
-    | b == N 'D' = 5
-    | b == N 'E' = 10
-    | b == N 'F' = 15
-    | b == N 'G' = 20
-    | b == N 'r' = 0
-    | otherwise = 0
-
+scale b = case b of 
+            (N 'C') -> 0
+            (N 'A') -> 25
+            (N 'B') -> 30
+            (N 'D') -> 5
+            (N 'E') -> 10
+            (N 'F') -> 15
+            (N 'G') -> 20
+            (N 'r') -> 0
+--check for redu
 checkFS :: Int -> Int -> Tone -> Tone -> Html
 checkFS y x a fs 
-      | a == fs = []
+      | a == fs = ""
       | otherwise = flatSharpHtml y (x-25) a
 --increment for donation
 xDona :: Int -> Sound -> Int
 xDona x s = case s of 
-	           Note {a,b,c,d} -> x + floor(c*sizeOfMeasure)
-	           Chore a      -> xDona x (head a)
+	           Note {tone =a,note =b,duration =c,octave = d}  -> (x+ floor(c * fromIntegral sizeOfMeasure))
+	           Chord a      -> xDona x (Prelude.head a)
 
 
 keySigHtml :: Manager -> [[[Sound]]] -> (Html, Manager)
@@ -201,12 +198,12 @@ printKeySig fs x y = case (Prelude.head fs) of
 
 flatHtml :: String -> Int -> Int -> Html
 flatHtml [] y x = ""
-flatHtml f y x = do unitHtml "flat" (yMapping (Prelude.head f) y) x;
+flatHtml f y x = do flatSharpHtml (yMapping (Prelude.head f) y) x Flat;
 					(flatHtml (tail f) y (x+sizeOfFlat));
 
 sharpHtml :: String -> Int -> Int -> Html
 sharpHtml [] y x  = ""
-sharpHtml s y x = do unitHtml "sharp" (yMapping (Prelude.head s) y) x;
+sharpHtml s y x = do flatSharpHtml (yMapping (Prelude.head s) y) x Sharp ;
 					(sharpHtml (tail s) y (x+sizeOfSharp));
 
 yMapping :: Char -> Int -> Int

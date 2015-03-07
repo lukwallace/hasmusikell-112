@@ -21,7 +21,7 @@ eol = 	try (string "\n\r")
 
 {-=================The Data Representations =====================-}
 
-data Tone = Sharp | Flat | Natural | None deriving (Show)
+data Tone = Sharp | Flat | Natural | None deriving (Show, Eq)
 data Notes = N Char deriving (Show)
 
 data Sheet = Sheet { title :: String
