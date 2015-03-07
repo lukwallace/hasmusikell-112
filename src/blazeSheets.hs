@@ -21,7 +21,7 @@ sizeOfStanza = 130
 sizeOfLetter = 12
 sizeOfFlatSharp = 15
 sizeOfUnit = 5
-sizeOfMeasure = 275
+sizeOfMeasure = 233
 halfOfStanza = 700
 sizeOfcommon = 40
 
@@ -144,16 +144,24 @@ musicHtml m@(M y x fs) (s:ss) = do printStanza m s
 printStanza :: Manager -> [[Sound]] -> Html
 printStanza m@(M y x fs) [] = ""
 printStanza m@(M y x fs) (s:ss) = do printMeasure m s 
-                                     printStanza (M y (xInc x) fs) ss
+                                     printStanza (M y ((xInc x)+40) fs) ss
 
 printMeasure :: Manager -> [Sound] -> Html
-printMeasure m@(M y x fs) [] = ""
+printMeasure m@(M y x fs) [] = unitHtml "line" (y-13) x
 printMeasure m@(M y x fs) (s:ss) = do printNote m s
                                       printMeasure (M y (xDona x s) fs) ss
+                                     
+
+octaveHtml :: Int -> Int -> Int -> Int -> Html
+octaveHtml y x ys xs 
+       | ys > (y-10) = if (ys `mod` 10) == 0 then do unitHtml "octaveLine" ys xs; octaveHtml y x (ys-10) xs; else do unitHtml "octaveLine" (ys+5) xs; octaveHtml y x (ys-10) xs;
+       | ys < (y-50) = if (ys `mod` 10) == 0 then do unitHtml "octaveLine" ys xs; octaveHtml y x (ys+10) xs; else do unitHtml "octaveLine" (ys-55) xs; octaveHtml y x (ys+10) xs;
+       | otherwise = ""
 
 printNote :: Manager -> Sound -> Html
 printNote m@(M y x fs) s = case s of 
 	                         Note {tone =a,note =b,duration =c,octave = d} -> do noteHtml y x fs a b c d
+	                                                                             octaveHtml y x (y + scale(b) + (d*35)) x
 	                         Chord a      -> do printNote m (a!!0)
 	                                            if length a >= 2 then printNote m (Chord (tail a)) else ""
 
