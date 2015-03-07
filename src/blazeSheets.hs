@@ -216,13 +216,13 @@ sharpHtml s y x = do flatSharpHtml (yMapping (Prelude.head s) y) x Sharp ;
 
 yMapping :: Char -> Int -> Int
 yMapping c initY = case c of
-	'C' -> initY
-	'D' -> initY - (1*sizeOfUnit)
-	'E' -> initY - (2*sizeOfUnit)
 	'F' -> initY - (3*sizeOfUnit)
 	'G' -> initY - (4*sizeOfUnit)
 	'A' -> initY - (5*sizeOfUnit)
 	'B' -> initY - (6*sizeOfUnit)
+	'C' -> initY - (7*sizeOfUnit)
+	'D' -> initY - (8*sizeOfUnit)
+	'E' -> initY - (9*sizeOfUnit)
 
 main = do
 	args <- getArgs;
