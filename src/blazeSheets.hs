@@ -19,8 +19,7 @@ initX = 110
 initY = 85
 sizeOfStanza = 130
 sizeOfLetter = 12
-sizeOfFlat = 50
-sizeOfSharp = 50
+sizeOfFlatSharp = 50
 sizeOfUnit = 5
 sizeOfMeasure = 275
 halfOfStanza = 700
@@ -111,16 +110,24 @@ makeSheet (Sheet t fs s) = docTypeHtml $ do
 									  (songHtml (newManager fs) s);
 
 songHtml :: Manager -> [[[Sound]]] -> Html
-songHtml m@(M y x fs) xsss = do fshtml;
-							  	(musicHtml newm xsss);
-							where (fshtml, newm) = keySigHtml m xsss
+songHtml m@(M y x fs) xsss = do (keySigHtml m xsss);
+							  	(musicHtml (M y (indent fs x) fs) xsss);
 
 newManager :: String -> Manager
 newManager fs = (M initY initX fs)
 
+--indents the x position however many pixels to begin printing
+--begin printing the notes after all the key signatures are printed
+--edge case: fs cannot be size 1, but this generally is't possible.
+indent :: String -> Int -> Int
+indent "" x = x
+indent fs x = x + ((length fs) * sizeOfFlatSharp)
+
+--increments y position to the next stanza (middle C)
 yInc :: Int -> Int
 yInc y = y + sizeOfStanza
 
+--increments x position to the next measure
 xInc :: Int -> Int
 xInc x = x + sizeOfMeasure
 
@@ -144,7 +151,7 @@ printNote :: Manager -> Sound -> Html
 printNote m@(M y x fs) s = case s of 
 	                         Note {tone =a,note =b,duration =c,octave = d} -> do noteHtml y x fs a b c d
 	                         Chord a      -> do printNote m (a!!0)
-	                                            if length a < 2 then printNote m (Chord (tail a)) else ""
+	                                            if length a >= 2 then printNote m (Chord (tail a)) else ""
 
 noteHtml :: Int -> Int -> String -> Tone -> Notes -> Float -> Int -> Html
 noteHtml y x fs a b c d = do notesHtml b c (y + scale(b) + (d*35)) x
@@ -168,7 +175,7 @@ scale b = case b of
             (N 'E') -> 10
             (N 'F') -> 15
             (N 'G') -> 20
-            (N 'r') -> 0
+            (N 'r') -> 0 --this shouldn't be zero?
 --check for redu
 checkFS :: Int -> Int -> Tone -> Tone -> Html
 checkFS y x a fs 
@@ -181,9 +188,9 @@ xDona x s = case s of
 	           Chord a      -> xDona x (Prelude.head a)
 
 
-keySigHtml :: Manager -> [[[Sound]]] -> (Html, Manager)
-keySigHtml m xsss = foldl (makeKeySig) ("",m) xsss
-
+keySigHtml :: Manager -> [[[Sound]]] -> Html
+keySigHtml m xsss = newhtml
+		where (newhtml, _) = foldl (makeKeySig) ("",m) xsss
 
 makeKeySig :: (Html, Manager) -> [[Sound]] -> (Html, Manager)
 makeKeySig (h, (M y x fs)) anything = (nh, (M ny x fs))
@@ -199,12 +206,12 @@ printKeySig fs x y = case (Prelude.head fs) of
 flatHtml :: String -> Int -> Int -> Html
 flatHtml [] y x = ""
 flatHtml f y x = do flatSharpHtml (yMapping (Prelude.head f) y) x Flat;
-					(flatHtml (tail f) y (x+sizeOfFlat));
+					(flatHtml (tail f) y (x+sizeOfFlatSharp));
 
 sharpHtml :: String -> Int -> Int -> Html
 sharpHtml [] y x  = ""
 sharpHtml s y x = do flatSharpHtml (yMapping (Prelude.head s) y) x Sharp ;
-					(sharpHtml (tail s) y (x+sizeOfSharp));
+					(sharpHtml (tail s) y (x+sizeOfFlatSharp));
 
 yMapping :: Char -> Int -> Int
 yMapping c initY = case c of
