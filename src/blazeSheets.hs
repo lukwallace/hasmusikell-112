@@ -121,11 +121,15 @@ newManager :: String -> Manager
 newManager fs = (M initY initX fs)
 
 --indents the x position however many pixels to begin printing
---begin printing the notes after all the key signatures are printed
+--the notes after all the key signature and time signature is printed
 --edge case: fs cannot be size 1, but this generally is't possible.
 indent :: String -> Int -> Int
-indent "" x = x
-indent fs x = x + (((length fs)-1) * sizeOfFlatSharp) + sizeOfcommon + 40
+indent "" x = x + sizeOfcommon + 20
+indent fs x = x + (((length fs)) * sizeOfFlatSharp) + sizeOfcommon + 20
+
+indentForTime :: String -> Int -> Int
+indentForTime "" x = x
+indentForTime fs x = x + (((length fs)) * sizeOfFlatSharp)
 
 --increments y position to the next stanza (middle C)
 yInc :: Int -> Int
@@ -201,6 +205,10 @@ makeKeySig (h, (M y x fs)) anything = (nh, (M ny x fs))
 		where ny = y + sizeOfStanza;
 			  nh = do h;
 			          (printKeySig fs y x);
+			          (printTimeSig fs y x);
+
+printTimeSig :: String -> Int -> Int -> Html
+printTimeSig fs y x = unitHtml "commontime" (y - 30) (indentForTime fs x)
 
 printKeySig :: String -> Int -> Int -> Html
 printKeySig fs y x = case (Prelude.head fs) of
@@ -237,6 +245,6 @@ main = do
 					  print e;
 					  
 		Right r -> do printSoundError r;
-					  print $ createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
+					  print $ te;
 					  L.writeFile "output.html" (R.renderHtml (makeSheet te));
 					   where te = createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
