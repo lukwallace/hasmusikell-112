@@ -16,13 +16,14 @@ data Manager = M Int Int String
 
 
 initX = 110
-initY = 105
+initY = 110
 sizeOfStanza = 130
 sizeOfLetter = 12
-sizeOfFlatSharp = 25
+sizeOfFlatSharp = 15
 sizeOfUnit = 5
 sizeOfMeasure = 275
 halfOfStanza = 700
+sizeOfcommon = 40
 
 
 setupString :: String
@@ -43,7 +44,8 @@ setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 			  "#sharp{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#commontime{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#beight{z-index:100;position:absolute;height: 50px;width: 50px;}" ++
-			  "#line{z-index:100;position:absolute;height: 50px;width: 50px;}"
+			  "#line{z-index:100;position:absolute;height: 50px;width: 50px;}" ++ 
+			  "#octaveLine{z-index:100;position:absolute;height: 50px;width: 50px;}"
 
 sheetHtml :: Int -> Int -> Html
 sheetHtml a b = H.img ! A.style (toValue(str)) ! A.id "image" ! A.src "img/newSheet.png"
@@ -69,6 +71,7 @@ notesHtml (N n) f a b
 
 unitHtml :: String -> Int -> Int -> Html
 unitHtml x a b 
+    | x == "octaveLine"  = H.img ! A.style (toValue(str)) ! A.id "octaveLine" ! A.src "img/octaveLine.png"
     | x == "commontime"  = H.img ! A.style (toValue(str)) ! A.id "commontime" ! A.src "img/commontime.png"
     | x == "line"        = H.img ! A.style (toValue(str)) ! A.id "line" ! A.src "img/line.png"
     where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
@@ -122,7 +125,7 @@ newManager fs = (M initY initX fs)
 --edge case: fs cannot be size 1, but this generally is't possible.
 indent :: String -> Int -> Int
 indent "" x = x
-indent fs x = x + ((length fs) * sizeOfFlatSharp)
+indent fs x = x + (((length fs)-1) * sizeOfFlatSharp) + sizeOfcommon + 40
 
 --increments y position to the next stanza (middle C)
 yInc :: Int -> Int
