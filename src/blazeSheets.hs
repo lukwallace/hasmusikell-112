@@ -26,7 +26,7 @@ halfOfStanza = 700
 sizeOfcommon = 40
 stanzaCounter = 0
 sheetHeight = 1150
-sizeOfNextPage = 240
+sizeOfNewPageStanza = 240
 
 
 setupString :: String
@@ -139,7 +139,7 @@ yInc :: Int -> Int
 yInc y = y + sizeOfStanza
 
 yIncPage :: Int -> Int
-yIncPage y = y + sizeOfNextPage
+yIncPage y = y + sizeOfNewPageStanza
 
 --increments x position to the next measure
 xInc :: Int -> Int -> Int
@@ -148,11 +148,12 @@ xInc x sizeMeasure = x + sizeMeasure
 
 musicHtml :: Manager -> [[[Sound]]] -> Int -> Int -> Html
 musicHtml m@(M y x fs) [] counter sizeMeasure = ""
-musicHtml m@(M y x fs) (s:ss) counter sizeMeasure= if (counter `mod` 8) == 0 && (counter `Prelude.div` 8) /= 0 then do sheetHtml ((counter `Prelude.div` 8)*sheetHeight) 0; 
-	                                                                                                                   printStanza (M ((yIncPage y)-sizeOfStanza) x fs) s sizeMeasure; 
-	                                                                                                                   musicHtml (M (yIncPage y) x fs) ss (counter+1) sizeMeasure; 
-	                                                                                                           else do printStanza m s sizeMeasure; 
-	                                                                                                                   musicHtml (M (yInc y) x fs) ss (counter+1) sizeMeasure;
+musicHtml m@(M y x fs) (s:ss) counter sizeMeasure= if (counter `mod` 8) == 0 && (counter `Prelude.div` 8) /= 0
+												   then do sheetHtml ((counter `Prelude.div` 8)*sheetHeight) 0;
+												   		   printStanza (M ((yIncPage y)-sizeOfStanza) x fs) s sizeMeasure;
+												   		   musicHtml (M (yIncPage y) x fs) ss (counter+1) sizeMeasure; 
+	                                               else do printStanza m s sizeMeasure; 
+	                                                       musicHtml (M (yInc y) x fs) ss (counter+1) sizeMeasure;
 
 printStanza :: Manager -> [[Sound]] -> Int -> Html
 printStanza m@(M y x fs) [] sizeMeasure = ""
@@ -215,11 +216,11 @@ xDona x s sizeMeasure = case s of
 
 keySigHtml :: Manager -> [[[Sound]]] -> Html
 keySigHtml m xsss = newhtml
-		where (newhtml, _) = foldl (makeKeySig) ("",m) xsss
+		where (newhtml, _, _) = foldl (makeKeySig) ("",m,1) xsss
 
-makeKeySig :: (Html, Manager) -> [[Sound]] -> (Html, Manager)
-makeKeySig (h, (M y x fs)) anything = (nh, (M ny x fs))
-		where ny = y + sizeOfStanza;
+makeKeySig :: (Html, Manager, Int) -> [[Sound]] -> (Html, Manager, Int)
+makeKeySig (h, (M y x fs), sc) anything = (nh, (M ny x fs), sc+1)
+		where ny = (if ((sc `mod` 8) == 0) then (y + sizeOfNewPageStanza) else (y + sizeOfStanza));
 			  nh = do h;
 			          (printKeySig fs y x);
 			          (printTimeSig fs y x);
