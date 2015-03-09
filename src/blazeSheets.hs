@@ -167,20 +167,20 @@ printMeasure m@(M y x fs) (s:ss) = do printNote m s
 
 octaveHtml :: Int -> Int -> Int -> Int -> Html
 octaveHtml y x ys xs 
-       | ys > (y-10) = if (ys `mod` 10) == 0 then do unitHtml "octaveLine" ys xs; octaveHtml y x (ys-10) xs; else do unitHtml "octaveLine" (ys+5) xs; octaveHtml y x (ys-10) xs;
-       | ys < (y-50) = if (ys `mod` 10) == 0 then do unitHtml "octaveLine" ys xs; octaveHtml y x (ys+10) xs; else do unitHtml "octaveLine" (ys-55) xs; octaveHtml y x (ys+10) xs;
+       | ys > (y) = if (ys `mod` 10) == 0 then do unitHtml "octaveLine" ys xs; octaveHtml y x (ys-10) xs; else do unitHtml "octaveLine" (ys+5) xs; octaveHtml y x (ys-10) xs;
+       | ys < (y-60) = if (ys `mod` 10) == 0 then do unitHtml "octaveLine" ys xs; octaveHtml y x (ys+10) xs; else do unitHtml "octaveLine" (ys-55) xs; octaveHtml y x (ys+10) xs;
        | otherwise = ""
 
 printNote :: Manager -> Sound -> Html
 printNote m@(M y x fs) s = case s of 
 	                         Note {tone =a,note =b,duration =c,octave = d} -> do noteHtml y x fs a b c d
-	                                                                             octaveHtml y x (y + scale(b) + (d*35)) x
+	                                                                             octaveHtml y x (y + scale(b) + ((-1)*(d*35))) x
 	                         Chord a      -> do printNote m (a!!0)
 	                                            if length a >= 2 then printNote m (Chord (tail a)) else ""
 
 noteHtml :: Int -> Int -> String -> Tone -> Notes -> Float -> Int -> Html
-noteHtml y x fs a b c d = do notesHtml b c (y + scale(b) + (d*35)) x
-                             checkFS (y + scale(b) + (d*35)) x a (changeFS b fs)
+noteHtml y x fs a b c d = do notesHtml b c (y + scale(b) + (-1)*(d*35)) x
+                             checkFS (y + scale(b) + (-1)*(d*35)) x a (changeFS b fs)
 
 changeFS :: Notes -> String ->Tone
 changeFS (N b) [] = None
@@ -225,7 +225,7 @@ makeKeySig (h, (M y x fs)) anything = (nh, (M ny x fs))
 			          (printTimeSig fs y x);
 
 printTimeSig :: String -> Int -> Int -> Html
-printTimeSig fs y x = unitHtml "commontime" (y - 30) (indentForTime fs x)
+printTimeSig fs y x = unitHtml "commontime" (y - 23) (indentForTime fs x)
 
 printKeySig :: String -> Int -> Int -> Html
 printKeySig fs y x = if fs == "" then "" else case (Prelude.head fs) of
