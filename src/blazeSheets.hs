@@ -118,7 +118,7 @@ makeSheet (Sheet t fs s) = docTypeHtml $ do
 
 songHtml :: Manager -> [[[Sound]]] -> Html
 songHtml m@(M y x fs) xsss = do (keySigHtml m xsss);
-							  	(musicHtml (M y (indent fs x) fs) xsss stanzaCounter);
+							  	(musicHtml (M y (indent fs x) fs) xsss stanzaCounter ((1170-(indent fs x))`Prelude.div`4));
 
 newManager :: String -> Manager
 newManager fs = (M initY initX fs)
@@ -142,27 +142,27 @@ yIncPage :: Int -> Int
 yIncPage y = y + sizeOfNextPage
 
 --increments x position to the next measure
-xInc :: Int -> Int
-xInc x = x + sizeOfMeasure
+xInc :: Int -> Int -> Int
+xInc x sizeMeasure = x + sizeMeasure
 
 
-musicHtml :: Manager -> [[[Sound]]] -> Int -> Html
-musicHtml m@(M y x fs) [] counter = ""
-musicHtml m@(M y x fs) (s:ss) counter = if (counter `mod` 8) == 0 && (counter `Prelude.div` 8) /= 0 then do sheetHtml ((counter `Prelude.div` 8)*sheetHeight) 0; 
-	                                                                                                        printStanza (M ((yIncPage y)-sizeOfStanza) x fs) s; 
-	                                                                                                        musicHtml (M (yIncPage y) x fs) ss (counter+1); 
-	                                                                                                else do printStanza m s; 
-	                                                                                                        musicHtml (M (yInc y) x fs) ss (counter+1);
+musicHtml :: Manager -> [[[Sound]]] -> Int -> Int -> Html
+musicHtml m@(M y x fs) [] counter sizeMeasure = ""
+musicHtml m@(M y x fs) (s:ss) counter sizeMeasure= if (counter `mod` 8) == 0 && (counter `Prelude.div` 8) /= 0 then do sheetHtml ((counter `Prelude.div` 8)*sheetHeight) 0; 
+	                                                                                                                   printStanza (M ((yIncPage y)-sizeOfStanza) x fs) s sizeMeasure; 
+	                                                                                                                   musicHtml (M (yIncPage y) x fs) ss (counter+1) sizeMeasure; 
+	                                                                                                           else do printStanza m s sizeMeasure; 
+	                                                                                                                   musicHtml (M (yInc y) x fs) ss (counter+1) sizeMeasure;
 
-printStanza :: Manager -> [[Sound]] -> Html
-printStanza m@(M y x fs) [] = ""
-printStanza m@(M y x fs) (s:ss) = do printMeasure m s 
-                                     printStanza (M y ((xInc x)+40) fs) ss
+printStanza :: Manager -> [[Sound]] -> Int -> Html
+printStanza m@(M y x fs) [] sizeMeasure = ""
+printStanza m@(M y x fs) (s:ss) sizeMeasure = do printMeasure m s sizeMeasure
+                                                 printStanza (M y ((xInc x sizeMeasure)+40) fs) ss sizeMeasure
 
-printMeasure :: Manager -> [Sound] -> Html
-printMeasure m@(M y x fs) [] = unitHtml "line" (y-13) x
-printMeasure m@(M y x fs) (s:ss) = do printNote m s
-                                      printMeasure (M y (xDona x s) fs) ss
+printMeasure :: Manager -> [Sound] -> Int -> Html
+printMeasure m@(M y x fs) [] sizeMeasure = unitHtml "line" (y-13) x
+printMeasure m@(M y x fs) (s:ss) sizeMeasure = do printNote m s
+                                                  printMeasure (M y (xDona x s sizeMeasure) fs) ss sizeMeasure
                                      
 
 octaveHtml :: Int -> Int -> Int -> Int -> Html
@@ -207,10 +207,10 @@ checkFS y x a fs
       | a == fs = ""
       | otherwise = flatSharpHtml y (x-25) a
 --increment for donation
-xDona :: Int -> Sound -> Int
-xDona x s = case s of 
-	           Note {tone =a,note =b,duration =c,octave = d}  -> (x+ floor(c * fromIntegral sizeOfMeasure))
-	           Chord a      -> xDona x (Prelude.head a)
+xDona :: Int -> Sound -> Int -> Int
+xDona x s sizeMeasure = case s of 
+	                      Note {tone =a,note =b,duration =c,octave = d}  -> (x+ floor(c * fromIntegral sizeMeasure))
+	                      Chord a      -> xDona x (Prelude.head a) sizeMeasure
 
 
 keySigHtml :: Manager -> [[[Sound]]] -> Html
