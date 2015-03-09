@@ -105,10 +105,10 @@ checkFlatsSharps xs
 --For the rest of the sheet
 printSoundError :: [[String]] -> IO ()
 printSoundError xss = let (str, bool) = (checkSound xss) in
-					  do if(bool == False) 
-						then do putStrLn ("\"" ++ str ++ "\" is not a valid note or chord");
-								exitFailure
-						else putStrLn ". . . ok sheet";
+					  if bool
+					  then putStrLn ". . . ok sheet";
+				   	  else do putStrLn ("\"" ++ str ++ "\" is not a valid note or chord");
+				   	  		  exitFailure
 
 checkSound :: [[String]] -> (String, Bool)
 checkSound listOfStanzas = foldl (findErrorInStanza) ("",True) listOfStanzas
@@ -149,6 +149,56 @@ exactMatch (x, y, z)
 	| (x == "") && (y /= "") && (z == "") = True
 	| otherwise                           = False
 
+printMeasureError :: [[String]] -> IO ()
+printMeasureError xss = if bool
+						then putStrLn ". . . ok number of measures"
+						else do putStrLn ("Invalid number of measures on stanza line: " ++  show adonde);
+								exitFailure
+	where (bool, useless, adonde) = checkMeasureError xss
+
+checkMeasureError :: [[String]] -> (Bool, Int, Int)
+checkMeasureError xss
+	| (init xss) == [] = (True, 1,1)
+	| otherwise        = foldl (find4Measure) (True,1,1) (init xss)
+
+find4Measure :: (Bool, Int, Int) -> [String] -> (Bool, Int, Int)
+find4Measure (accbool,sc,errline) xs
+	| (accbool == False) = (accbool, 1, errline)
+	| (length xs /= 4)   = (False, 1, sc)
+	| otherwise          = (True, sc+1, 1)
+
+printBeatError :: [[[Sound]]] -> IO ()
+printBeatError xsss = let (bool ,m, s, useless, uselessAgain) = checkBeatError xsss in
+					  if bool
+					  then putStrLn ". . . ok number of beats per measure";
+					  else do putStrLn ("Invalid number of beats in measure " ++ show m ++ " stanza " ++ show s);
+					  		  exitFailure
+
+checkBeatError :: [[[Sound]]] -> (Bool, Int, Int, Int, Int)
+checkBeatError listOfStanzas = foldl (findStanzaBeatError) (True,1,1,1,1) listOfStanzas
+
+findStanzaBeatError :: (Bool, Int, Int, Int, Int) -> [[Sound]] -> (Bool, Int, Int, Int, Int)
+findStanzaBeatError (accbool, accm, accs, mc, sc) listOfMeasures
+	| (accbool == False) = (accbool, accm, accs, 1, 1)
+	| (bool == False)    = (bool, newm, sc, 1, 1)
+	| otherwise          = (True,1,1,1,sc+1)
+	where (bool, newm, news, nsc, nmc) = foldl (validMeasure) (True,1,1,sc,1) listOfMeasures
+
+validMeasure :: (Bool, Int, Int, Int, Int) -> [Sound] -> (Bool, Int, Int, Int, Int)
+validMeasure (accbool, accm, accs, mc, sc) listOfSounds
+	| (accbool == False) = (accbool, accm, accs, 1, 1)
+	| (bool == False)    = (bool, mc, accs, 1, 1)
+	| (otherwise)		 = (True,1, 1, mc+1, sc)
+	where bool = hasFourBeats listOfSounds
+
+hasFourBeats :: [Sound] -> Bool
+hasFourBeats listOfSounds = if (foldl (addDurations) 0.0 listOfSounds) /= 1.0
+							then False
+							else True
+
+addDurations :: Float -> Sound -> Float
+addDurations accsum (Note _ _ d _) = accsum + d
+addDurations accsum (Chord xs)     = addDurations accsum (head xs)
 
 {-====== Parser Output to Data Representation ======-}
 

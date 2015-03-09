@@ -263,6 +263,8 @@ main = do
 					  print e;
 					  
 		Right r -> do printSoundError r;
+					  printMeasureError r;
+					  printBeatError (createMusic r);
 					  print $ te;
 					  L.writeFile "output.html" (R.renderHtml (makeSheet te));
 					  	where te = createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
