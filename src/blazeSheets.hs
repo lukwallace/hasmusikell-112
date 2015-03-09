@@ -168,8 +168,8 @@ printMeasure m@(M y x fs) (s:ss) sizeMeasure = do printNote m s
 
 octaveHtml :: Int -> Int -> Int -> Int -> Html
 octaveHtml y x ys xs 
-       | ys >= (y) = if (ys `mod` 10) == 0 then do unitHtml "octaveLine" ys xs; octaveHtml y x (ys-10) xs; else do unitHtml "octaveLine" (ys+5) xs; octaveHtml y x (ys-10) xs;
-       | ys <= (y-60) = if (ys `mod` 10) == 0 then do unitHtml "octaveLine" ys xs; octaveHtml y x (ys+10) xs; else do unitHtml "octaveLine" (ys-55) xs; octaveHtml y x (ys+10) xs;
+       | ys >= (y) = if (ys `mod` 10) == 0 then do unitHtml "octaveLine" ys xs; octaveHtml y x (ys-10) xs; else do unitHtml "octaveLine" (ys-5) xs; octaveHtml y x (ys-10) xs;
+       | ys <= (y-60) = if (ys `mod` 10) == 0 then do unitHtml "octaveLine" ys xs; octaveHtml y x (ys+10) xs; else do unitHtml "octaveLine" (ys+5) xs; octaveHtml y x (ys+10) xs;
        | otherwise = ""
 
 printNote :: Manager -> Sound -> Html
