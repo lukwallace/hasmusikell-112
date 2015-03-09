@@ -24,12 +24,15 @@ sizeOfUnit = 5
 sizeOfMeasure = 233
 halfOfStanza = 700
 sizeOfcommon = 40
+stanzaCounter = 0
+sheetHeight = 1150
+sizeOfNextPage = 240
 
 
 setupString :: String
 setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 			  "#title{z-index:100;position:absolute;}"++
-			  "#image{height:50%;width:50%;position:absolute;}"++
+			  "#image{height:50.5%;width:50%;position:absolute;}"++
 			  "#fourth{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#eighth{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#sixteen{z-index:100;position:absolute;height: 50px;width: 50px;}"++
@@ -115,7 +118,7 @@ makeSheet (Sheet t fs s) = docTypeHtml $ do
 
 songHtml :: Manager -> [[[Sound]]] -> Html
 songHtml m@(M y x fs) xsss = do (keySigHtml m xsss);
-							  	(musicHtml (M y (indent fs x) fs) xsss);
+							  	(musicHtml (M y (indent fs x) fs) xsss stanzaCounter);
 
 newManager :: String -> Manager
 newManager fs = (M initY initX fs)
@@ -135,15 +138,21 @@ indentForTime fs x = x + (((length fs)) * sizeOfFlatSharp)
 yInc :: Int -> Int
 yInc y = y + sizeOfStanza
 
+yIncPage :: Int -> Int
+yIncPage y = y + sizeOfNextPage
+
 --increments x position to the next measure
 xInc :: Int -> Int
 xInc x = x + sizeOfMeasure
 
 
-musicHtml :: Manager -> [[[Sound]]] -> Html
-musicHtml m@(M y x fs) [] = ""
-musicHtml m@(M y x fs) (s:ss) = do printStanza m s
-                                   musicHtml (M (yInc y) x fs) ss
+musicHtml :: Manager -> [[[Sound]]] -> Int -> Html
+musicHtml m@(M y x fs) [] counter = ""
+musicHtml m@(M y x fs) (s:ss) counter = if (counter `mod` 8) == 0 && (counter `Prelude.div` 8) /= 0 then do sheetHtml ((counter `Prelude.div` 8)*sheetHeight) 0; 
+	                                                                                                        printStanza (M ((yIncPage y)-sizeOfStanza) x fs) s; 
+	                                                                                                        musicHtml (M (yIncPage y) x fs) ss (counter+1); 
+	                                                                                                else do printStanza m s; 
+	                                                                                                        musicHtml (M (yInc y) x fs) ss (counter+1);
 
 printStanza :: Manager -> [[Sound]] -> Html
 printStanza m@(M y x fs) [] = ""
