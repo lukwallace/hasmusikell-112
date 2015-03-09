@@ -1,5 +1,4 @@
 title: This isn't a real title
-sharps: ABC
 bA4 r2 bF4| r4 r4 r4 r4| bC4 C4 C4 C4| r1
 bA4 C2 bF4| #F4 #F4 #F4 #F4| bC4 C4 C4 C4| A1
 bA4 C2 bF4| #F4 #F4 #F4 #F4| bC4 C4 C4 C4| A1

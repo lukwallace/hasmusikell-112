@@ -228,9 +228,9 @@ printTimeSig :: String -> Int -> Int -> Html
 printTimeSig fs y x = unitHtml "commontime" (y - 30) (indentForTime fs x)
 
 printKeySig :: String -> Int -> Int -> Html
-printKeySig fs y x = case (Prelude.head fs) of
-			   			('f') -> flatHtml (tail fs) y x
-			  			('s') -> sharpHtml (tail fs) y x
+printKeySig fs y x = if fs == "" then "" else case (Prelude.head fs) of
+			   			                         ('f') -> flatHtml (tail fs) y x
+			  			                         ('s') -> sharpHtml (tail fs) y x
 
 flatHtml :: String -> Int -> Int -> Html
 flatHtml [] y x = ""
@@ -264,4 +264,4 @@ main = do
 		Right r -> do printSoundError r;
 					  print $ te;
 					  L.writeFile "output.html" (R.renderHtml (makeSheet te));
-					   where te = createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
+					  	where te = createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
