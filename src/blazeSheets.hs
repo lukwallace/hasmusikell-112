@@ -200,8 +200,8 @@ scale b = case b of
             (N 'E') -> -10
             (N 'F') -> -15
             (N 'G') -> -20
-            (N 'r') -> 0 --this shouldn't be zero?
---check for redu
+            (N 'r') -> -25 --this shouldn't be zero?
+--check for redundacy
 checkFS :: Int -> Int -> Tone -> Tone -> Html
 checkFS y x a fs 
       | a == fs = ""
