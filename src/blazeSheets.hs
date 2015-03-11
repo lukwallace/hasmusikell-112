@@ -47,7 +47,8 @@ setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 			  "#commontime{z-index:100;position:absolute;height: 50px;width: 50px;}"++
 			  "#beight{z-index:100;position:absolute;height: 50px;width: 50px;}" ++
 			  "#line{z-index:100;position:absolute;height: 50px;width: 50px;}" ++ 
-			  "#octaveLine{z-index:100;position:absolute;height: 50px;width: 50px;}"
+			  "#octaveLine{z-index:100;position:absolute;height: 50px;width: 50px;}" ++
+			  "#three-forth{z-index:100;position:absolute;height: 50px;width: 50px;}"
 
 {-========= Major Html Creation Functions =========-}
 sheetHtml :: Int -> Int -> Html
@@ -69,6 +70,7 @@ notesHtml (N n) f a b
     | (f == 1/2 && n == 'r')      = H.img ! A.style (toValue(str)) ! A.id "halfrest" ! A.src "img/halfrest.png"
     | (f == 1/4 && n == 'r')      = H.img ! A.style (toValue(str)) ! A.id "forth-rest" ! A.src "img/4th-rest.png"
     | (f == 1/8 && n == 'r')      = H.img ! A.style (toValue(str)) ! A.id "eightrest" ! A.src "img/eightrest.png"
+    | (f == 3/4 && n /= 'r')      = H.img ! A.style (toValue(str)) ! A.id "three-forth" ! A.src "img/three-forth.png"
     where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
 
 unitHtml :: String -> Int -> Int -> Html
@@ -98,7 +100,7 @@ makeSheet (Sheet t fs s) = docTypeHtml $ do
 
 songHtml :: Manager -> [[[Sound]]] -> Html
 songHtml m@(M y x fs) xsss = do (keySigHtml m xsss);
-							  	(musicHtml (M y (indent fs x) fs) xsss stanzaCounter ((1170-(indent fs x))`Prelude.div`4));
+							  	(musicHtml (M y (indent fs x) fs) xsss stanzaCounter ((1200-(indent fs x))`Prelude.div`4));
 
 {-======= Functions For Overhead Management =======-}
 
@@ -110,7 +112,7 @@ newManager fs = (M initY initX fs)
 --edge case: fs cannot be size 1, but this generally is't possible.
 indent :: String -> Int -> Int
 indent "" x = x + sizeOfcommon + 20
-indent fs x = x + (((length fs)) * sizeOfFlatSharp) + sizeOfcommon + 20
+indent fs x = x + (((length fs)) * sizeOfFlatSharp) + sizeOfcommon + 15
 
 --indents for the time signature, used after the key signature is placed
 indentForTime :: String -> Int -> Int
@@ -143,7 +145,7 @@ musicHtml m@(M y x fs) (s:ss) counter sizeMeasure= if (counter `mod` 8) == 0 && 
 printStanza :: Manager -> [[Sound]] -> Int -> Html
 printStanza m@(M y x fs) [] sizeMeasure = ""
 printStanza m@(M y x fs) (s:ss) sizeMeasure = do printMeasure m s sizeMeasure
-                                                 printStanza (M y ((xInc x sizeMeasure)+40) fs) ss sizeMeasure
+                                                 printStanza (M y ((xInc x sizeMeasure)+30) fs) ss sizeMeasure
 
 printMeasure :: Manager -> [Sound] -> Int -> Html
 printMeasure m@(M y x fs) [] sizeMeasure = unitHtml "line" (y-13) x
@@ -191,7 +193,7 @@ scale b = case b of
 checkFS :: Int -> Int -> Tone -> Tone -> Html
 checkFS y x a fs 
       | a == fs = ""
-      | otherwise = flatSharpHtml y (x-25) a
+      | otherwise = flatSharpHtml y (x-18) a
 --increment for donation
 xDona :: Int -> Sound -> Int -> Int
 xDona x s sizeMeasure = case s of 
@@ -251,6 +253,8 @@ main = do
 					  print e;
 					  
 		Right r -> do printSoundError r;
+					  printMeasureError r;
+					  printBeatError (createMusic r);
 					  print $ te;
 					  L.writeFile "output.html" (R.renderHtml (makeSheet te));
 					  	where te = createSheet (findTitle contents) (checkFlatsSharps contents) (createMusic r);
