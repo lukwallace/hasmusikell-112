@@ -14,8 +14,8 @@ import MusicSheet
 --represents the flats and sharps in the key signature
 data Manager = M Int Int String
 
-
-initX = 110
+--Static Variables
+initX = 110 
 initY = 110
 sizeOfStanza = 130
 sizeOfLetter = 12
@@ -27,7 +27,6 @@ sizeOfcommon = 40
 stanzaCounter = 0
 sheetHeight = 1150
 sizeOfNewPageStanza = 240
-
 
 setupString :: String
 setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
@@ -50,10 +49,10 @@ setupString = "#container{height:2300px;width:3000px;position:relative;}" ++
 			  "#line{z-index:100;position:absolute;height: 50px;width: 50px;}" ++ 
 			  "#octaveLine{z-index:100;position:absolute;height: 50px;width: 50px;}"
 
+{-========= Major Html Creation Functions =========-}
 sheetHtml :: Int -> Int -> Html
 sheetHtml a b = H.img ! A.style (toValue(str)) ! A.id "image" ! A.src "img/newSheet.png"
     		 where str = "top:" ++ show a ++ "px; left:" ++ show b ++ "px;"
-
 
 titleHtml :: String -> Html
 titleHtml xs =  H.h1 ! A.style (toValue("top:0px; left:" ++ show a ++ "px;")) ! A.id "title" $ toHtml xs
@@ -87,25 +86,6 @@ flatSharpHtml y x a = case a of
                         otherwise -> ""
                        where str = "top:" ++ show y ++ "px; left:" ++ show x ++ "px;"
 
---unfinished, will need more parameters for flat/sharp checking?
-{-soundToHtml :: Sound -> Int -> Int -> Html
-soundToHtml s y x = case s of
-	(Note None n d o) -> unitHtml (findUnitType d n) (yPos n o y) (xPos d x)
-	(Note Flat n d o) -> do (makeFlat);
-							unitHtml (findUnitType d n) (yPos n o y) (xPos d x)
-	(Note Sharp n d o) -> do (makesharp);
-							 unitHtml (findUnitType d n) (yPos n o y) (xPos d x)
--}
---for testing
-test :: String -> Html
-test x = docTypeHtml $ do
-	H.head $ do
-		H.meta ! A.charset "uft-8"
-		H.style $ toHtml setupString
-	H.body $ do
-		H.div ! A.id "container" $ do (sheetHtml 0 0);
-									  (titleHtml x);
-
 makeSheet :: Sheet -> Html
 makeSheet (Sheet t fs s) = docTypeHtml $ do
 	H.head $ do
@@ -120,6 +100,8 @@ songHtml :: Manager -> [[[Sound]]] -> Html
 songHtml m@(M y x fs) xsss = do (keySigHtml m xsss);
 							  	(musicHtml (M y (indent fs x) fs) xsss stanzaCounter ((1170-(indent fs x))`Prelude.div`4));
 
+{-======= Functions For Overhead Management =======-}
+
 newManager :: String -> Manager
 newManager fs = (M initY initX fs)
 
@@ -130,6 +112,7 @@ indent :: String -> Int -> Int
 indent "" x = x + sizeOfcommon + 20
 indent fs x = x + (((length fs)) * sizeOfFlatSharp) + sizeOfcommon + 20
 
+--indents for the time signature, used after the key signature is placed
 indentForTime :: String -> Int -> Int
 indentForTime "" x = x
 indentForTime fs x = x + (((length fs)) * sizeOfFlatSharp)
@@ -145,7 +128,9 @@ yIncPage y = y + sizeOfNewPageStanza
 xInc :: Int -> Int -> Int
 xInc x sizeMeasure = x + sizeMeasure
 
+{-===================== Detailed Html Creation Functions =======================-}
 
+--Deals with the notes
 musicHtml :: Manager -> [[[Sound]]] -> Int -> Int -> Html
 musicHtml m@(M y x fs) [] counter sizeMeasure = ""
 musicHtml m@(M y x fs) (s:ss) counter sizeMeasure= if (counter `mod` 8) == 0 && (counter `Prelude.div` 8) /= 0
@@ -165,7 +150,7 @@ printMeasure m@(M y x fs) [] sizeMeasure = unitHtml "line" (y-13) x
 printMeasure m@(M y x fs) (s:ss) sizeMeasure = do printNote m s
                                                   printMeasure (M y (xDona x s sizeMeasure) fs) ss sizeMeasure
                                      
-
+--Deals with the little lines that appear when a note jumps out of a stanza
 octaveHtml :: Int -> Int -> Int -> Int -> Html
 octaveHtml y x ys xs 
        | ys >= (y) = if (ys `mod` 10) == 0 then do unitHtml "octaveLine" ys xs; octaveHtml y x (ys-10) xs; else do unitHtml "octaveLine" (ys-5) xs; octaveHtml y x (ys-10) xs;
@@ -201,7 +186,7 @@ scale b = case b of
             (N 'E') -> -10
             (N 'F') -> -15
             (N 'G') -> -20
-            (N 'r') -> -25 --this shouldn't be zero?
+            (N 'r') -> -25
 --check for redundacy
 checkFS :: Int -> Int -> Tone -> Tone -> Html
 checkFS y x a fs 
@@ -213,7 +198,7 @@ xDona x s sizeMeasure = case s of
 	                      Note {tone =a,note =b,duration =c,octave = d}  -> (x+ floor(c * fromIntegral sizeMeasure))
 	                      Chord a      -> xDona x (Prelude.head a) sizeMeasure
 
-
+--Deals with the key signature and the time signature as well.
 keySigHtml :: Manager -> [[[Sound]]] -> Html
 keySigHtml m xsss = newhtml
 		where (newhtml, _, _) = foldl (makeKeySig) ("",m,1) xsss
@@ -243,6 +228,7 @@ sharpHtml [] y x  = ""
 sharpHtml s y x = do flatSharpHtml (yMapping (Prelude.head s) y) x Sharp ;
 					 (sharpHtml (tail s) y (x+sizeOfFlatSharp));
 
+--Maps a note to a specific position with respect to middle C
 yMapping :: Char -> Int -> Int
 yMapping c initY = case c of
 	'F' -> initY - (3*sizeOfUnit)
@@ -252,6 +238,8 @@ yMapping c initY = case c of
 	'C' -> initY - (7*sizeOfUnit)
 	'D' -> initY - (8*sizeOfUnit)
 	'E' -> initY - (9*sizeOfUnit)
+
+
 
 main = do
 	args <- getArgs;
