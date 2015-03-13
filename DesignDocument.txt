@@ -1,6 +1,8 @@
 ﻿Hasmusikell
-
-
+Author: Wallace Luk
+        Tommy Li
+        Steven Cruz
+        
 Feature Specifications
 
 
@@ -37,4 +39,5 @@ Definitions
 Basic Example (Numbers represented by line numbers)
 1. title: Yo-ho-ho 
 2. flats: BCD
-3. C4 C4 C4 C4 | bD1 | nE2_ F2’ | D3 C4_ | \n
+3. C4 C4 C4 C4 | bD1 | nE2_ F2’ | D3 C4_ 
+4. r2 r2| C1| #B2 E2,G2| F4 F4 F4 F4
