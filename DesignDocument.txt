@@ -1,4 +1,4 @@
-﻿Hasmusikell
+Project Name : Hasmusikell
 Author: Wallace Luk
         Tommy Li
         Steven Cruz
@@ -41,3 +41,9 @@ Basic Example (Numbers represented by line numbers)
 2. flats: BCD
 3. C4 C4 C4 C4 | bD1 | nE2_ F2’ | D3 C4_ 
 4. r2 r2| C1| #B2 E2,G2| F4 F4 F4 F4
+
+Complie Instruction:
+1.Save your music input into a .txt file.
+2.Move your .txt file to the /src directory with blazeSheets.hs
+3.Open command prompt and run "runhaskell blazeSheet.hs blah.txt in the /src directory
+4.Now output.html was created in the same directory, and that's your sheet music
