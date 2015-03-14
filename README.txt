@@ -45,5 +45,5 @@ Basic Example (Numbers represented by line numbers)
 Compile Instruction:
 1.Save your music input into a .txt file.
 2.Move your .txt file to the /src directory with blazeSheets.hs
-3.Open command prompt and run "runhaskell blazeSheet.hs blah.txt in the /src directory
+3.Open command prompt and run "runhaskell blazeSheet.hs blah.txt" in the /src directory
 4.Now output.html was created in the same directory, and that's your sheet music
